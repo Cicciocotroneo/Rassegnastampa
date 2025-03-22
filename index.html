@@ -249,11 +249,11 @@
             padding: 20px;
             margin-top: 20px;
         }
-   .press-review-header {
+ .press-review-header {
     text-align: center;
     border-bottom: 2px solid black;
     padding-bottom: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 0;
 }
         .press-review-title {
             font-size: 28px;
@@ -264,16 +264,30 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-        .press-review-articles {
-            column-count: 2;
-            column-gap: 20px;
-            text-align: justify;
-            hyphens: auto;
-        }
-        .press-review-article {
-            break-inside: avoid;
-            margin-bottom: 20px;
-        }
+      .press-review-articles {
+    column-count: 2;
+    column-gap: 20px;
+    text-align: justify;
+    hyphens: auto;
+    margin-top: 5px;
+}
+    .press-review-article:not(:last-child)::after {
+    content: '';
+    display: block;
+    width: 40%;
+    height: 1px;
+    background-color: #999;
+    margin: 10px auto;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+
+.press-review-article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+}
         .article-title {
             font-size: 18px;
             font-weight: bold;
@@ -293,18 +307,24 @@
             line-height: 1.4;
             text-indent: 20px;
         }
-     .article-content p:first-of-type:first-letter {
+.article-content p:first-of-type:first-letter {
     font-size: 42px;
     font-weight: bold;
     float: left;
     margin-right: 6px;
-    margin-top: 8px;
-    line-height: 0.7;
+    margin-top: 0;
+    padding-top: 0;
+    line-height: 0.85;
+    height: 36px;
 }
-        .article-content p {
-            word-spacing: normal !important;
-            letter-spacing: normal !important;
-        }
+
+.article-content p:first-of-type {
+    text-indent: 0;  /* Rimuove il rientro dal primo paragrafo */
+}
+
+.article-content p {
+    text-indent: 20px; /* Mantiene il rientro per gli altri paragrafi */
+}
         .press-review-article {
     break-inside: avoid;
     margin-bottom: 10px;
@@ -1236,7 +1256,7 @@
             }
             
             // Funzione per generare la rassegna stampa
-            function generatePressReview() {
+function generatePressReview() {
     const currentDate = new Date();
     const formattedDate = formatDate(currentDate);
     
@@ -1246,7 +1266,7 @@
             <div class="press-review-title">Fattariellows of the day</div>
             <div class="press-review-date">${formattedDate}</div>
         </div>
-        <div class="press-review-articles">
+        <div class="press-review-articles" style="margin-top: 5px;">
     `;
     
     // Aggiungi ogni articolo
