@@ -241,6 +241,18 @@
             .modal-header, .modal-buttons {
                 display: none !important;
             }
+            .press-review-header {
+        break-after: avoid;
+        page-break-after: avoid;
+    }
+    
+    .press-review-articles {
+        column-count: 2 !important; /* Forza il layout a due colonne per la stampa */
+    }
+    
+    .modal-content {
+        border: none !important; /* Rimuove il bordo durante la stampa per mobile */
+    }
         }
         
         #press-review-content, #view-review-content {
@@ -1266,8 +1278,9 @@ function generatePressReview() {
             <div class="press-review-title">Fattariellows of the day</div>
             <div class="press-review-date">${formattedDate}</div>
         </div>
-        <div class="press-review-articles" style="margin-top: 5px;">
+        <div class="press-review-articles" style="column-count: 1; margin-top: 5px;">
     `;
+    
     
     // Aggiungi ogni articolo
     savedArticles.forEach(article => {
