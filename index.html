@@ -1,756 +1,4 @@
-// Funzione per aggiornare la lista delle rassegne salvate
-            function updateSavedReviewsList() {
-                const savedReviewsContainer = document.getElementById('saved-reviews-container');
-                const savedReviewsBody = document.getElementById('saved-reviews-body');
-                
-                // Mostra il container delle rassegne salvate se ci sono rassegne
-                if (savedPressReviews && savedPressReviews.length > 0) {
-                    savedReviewsContainer.style.display = 'block';
-                    
-                    // Pulisci la tabella
-                    savedReviewsBody.innerHTML = '';
-                    
-                    // Ordina le rassegne per data (più recenti prima)
-                    const sortedReviews = [...savedPressReviews].sort((a, b) => 
-                        new Date(b.date) - new Date(a.date)
-                    );
-                    
-                    // Aggiungi le righe per ogni rassegna
-                    sortedReviews.forEach(review => {
-                        const row = document.createElement('tr');
-                        
-                        const titleCell = document.createElement('td');
-                        titleCell.textContent = review.title;
-                        row.appendChild(titleCell);
-                        
-                        const dateCell = document.createElement('td');
-                        dateCell.textContent = new Date(review.date).toLocaleDateString('it-IT');
-                        row.appendChild(dateCell);
-                        
-                        const articlesCountCell = document.createElement('td');
-                        articlesCountCell.textContent = review.articles ? review.articles.length : 0;
-                        row.appendChild(articlesCountCell);
-                        
-                        const actionsCell = document.createElement('td');
-                        actionsCell.className = 'action-cell';
-                        
-                        // Pulsante Visualizza
-                        const viewBtn = document.createElement('button');
-                        viewBtn.textContent = 'Visualizza';
-                        viewBtn.style.backgroundColor = '#2196F3';
-                        viewBtn.addEventListener('click', () => viewReview(review.id));
-                        actionsCell.appendChild(viewBtn);
-                        
-                        // Pulsante Elimina
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Elimina';
-                        deleteBtn.style.backgroundColor = '#f44336';
-                        deleteBtn.addEventListener('click', () => deleteReview(review.id));
-                        actionsCell.appendChild(deleteBtn);
-                        
-                        row.appendChild(actionsCell);
-                        
-                        savedReviewsBody.appendChild(row);
-                    });
-                } else {
-                    savedReviewsContainer.style.display = 'none';
-                }
-            }
-            
-            // Funzione per visualizzare una rassegna salvata
-            function viewReview(reviewId) {
-                const review = savedPressReviews.find(r => r.id === reviewId);
-                if (!review) return;
-                
-                // Imposta il contenuto nel modal
-                viewReviewContent.innerHTML = review.htmlContent;
-                viewReviewContent.dataset.reviewId = reviewId;
-                
-                // Mostra il modal
-                viewReviewModal.style.display = 'block';
-            }
-            
-            // Funzione per eliminare una rassegna
-            function deleteReview(reviewId) {
-                if (confirm('Sei sicuro di voler eliminare questa rassegna stampa?')) {
-                    // Rimuovi la rassegna dall'array
-                    // Rimuovi la rassegna dall'array
-                    savedPressReviews = savedPressReviews.filter(r => r.id !== reviewId);
-                    
-                    // Aggiorna il localStorage
-                    saveReviewsToLocalStorage();
-                    
-                    // Aggiorna la tabella
-                    updateSavedReviewsList();
-                    
-                    showStatus('success', 'Rassegna stampa eliminata con successo.');
-                }
-            }
-            
-            // Funzione per mostrare messaggi di stato
-            function showStatus(type, message) {
-                statusMessage.textContent = message;
-                statusMessage.className = '';
-                
-                if (type === 'error') {
-                    statusMessage.classList.add('error');
-                } else if (type === 'success') {
-                    statusMessage.classList.add('success');
-                } else if (type === 'loading') {
-                    statusMessage.classList.add('loading');
-                }
-            }
-            
-            // Funzione per estrarre le informazioni dell'articolo
-            function extractArticleInfo(domElement, url) {
-                // Oggetto che conterrà tutte le informazioni estratte
-                const articleInfo = {
-                    title: '',
-                    author: '',
-                    content: '',
-                    rawContent: ''
-                };
-                
-                // Estrai il titolo
-                articleInfo.title = extractTitle(domElement);
-                
-                // Estrai l'autore
-                articleInfo.author = extractAuthor(domElement);
-                
-                // Estrai il contenuto dell'articolo
-                const contentResult = extractArticleContent(domElement);
-                articleInfo.content = contentResult.formattedContent;
-                articleInfo.rawContent = contentResult.rawContent;
-                
-                return articleInfo;
-            }
-            
-            // Funzione per estrarre il titolo
-            function extractTitle(domElement) {
-                // Strategia 1: Cerca il tag title
-                const titleTag = domElement.querySelector('title');
-                if (titleTag && titleTag.textContent.trim()) {
-                    // Pulisci il titolo (rimuovi il nome del sito se presente)
-                    let title = titleTag.textContent.trim();
-                    // Rimuovi parti comuni alla fine del titolo come " | Nome del sito"
-                    title = title.split(/\s[|\-–—]\s/)[0];
-                    return title;
-                }
-                
-                // Strategia 2: Cerca l'elemento h1
-                const h1Tags = domElement.querySelectorAll('h1');
-                if (h1Tags.length > 0) {
-                    // Prendi l'h1 più lungo come probabile titolo
-                    let longestH1 = '';
-                    for (const h1 of h1Tags) {
-                        const text = h1.textContent.trim();
-                        if (text.length > longestH1.length) {
-                            longestH1 = text;
-                        }
-                    }
-                    if (longestH1) return longestH1;
-                }
-                
-                // Strategia 3: Cerca meta tags
-                const metaTitleTag = domElement.querySelector('meta[property="og:title"], meta[name="twitter:title"]');
-                if (metaTitleTag && metaTitleTag.getAttribute('content')) {
-                    return metaTitleTag.getAttribute('content').trim();
-                }
-                
-                // Strategia 4: Cerca elementi con classe o id che contengono "title"
-                const titleElements = domElement.querySelectorAll('[class*="title"], [id*="title"], .headline, .heading');
-                if (titleElements.length > 0) {
-                    for (const el of titleElements) {
-                        const text = el.textContent.trim();
-                        if (text.length > 10 && text.length < 200) {
-                            return text;
-                        }
-                    }
-                }
-                
-                return 'Titolo non trovato';
-            }
-            
-            // Funzione per estrarre l'autore
-            function extractAuthor(domElement) {
-                // Strategia 1: Cerca meta tags per l'autore
-                const metaAuthorTag = domElement.querySelector('meta[name="author"], meta[property="article:author"], meta[name="twitter:creator"]');
-                if (metaAuthorTag && metaAuthorTag.getAttribute('content')) {
-                    return metaAuthorTag.getAttribute('content').trim();
-                }
-                
-                // Strategia 2: Cerca elementi con classe o id che contengono "author"
-                const authorSelectors = [
-                    '[class*="author"]', 
-                    '[id*="author"]', 
-                    '[rel="author"]',
-                    '.byline',
-                    '.writer',
-                    '[class*="byline"]',
-                    '[class*="by-"]'
-                ];
-                
-                const authorElements = domElement.querySelectorAll(authorSelectors.join(', '));
-                if (authorElements.length > 0) {
-                    for (const el of authorElements) {
-                        const text = el.textContent.trim();
-                        // Evita testi troppo lunghi o troppo corti
-                        if (text.length > 3 && text.length < 100) {
-                            // Cerca di pulire il testo (rimuovere "By", "Author:", ecc.)
-                            let cleanedText = text.replace(/^(by|author|written by|posted by)[\s:]+/i, '').trim();
-                            // Se il testo è ancora valido, restituiscilo
-                            if (cleanedText.length > 3) {
-                                return cleanedText;
-                            }
-                        }
-                    }
-                }
-                
-                // Strategia 3: Cerca schemi strutturati (Schema.org)
-                const personElements = domElement.querySelectorAll('[itemtype*="schema.org/Person"]');
-                if (personElements.length > 0) {
-                    for (const el of personElements) {
-                        const nameEl = el.querySelector('[itemprop="name"]');
-                        if (nameEl && nameEl.textContent.trim()) {
-                            return nameEl.textContent.trim();
-                        }
-                    }
-                }
-                
-                return '';
-            }
-            
-            // Funzione per estrarre il contenuto dell'articolo
-            function extractArticleContent(domElement) {
-                // Risultato dell'estrazione
-                const result = {
-                    formattedContent: '',
-                    rawContent: ''
-                };
-                
-                // Strategia 1: Cerca elementi con tag semantici per articoli
-                let contentElement = null;
-                
-                // Cerca l'elemento article
-                const articleElements = domElement.querySelectorAll('article');
-                if (articleElements.length > 0) {
-                    // Prendi l'elemento article più grande
-                    let largestArticle = articleElements[0];
-                    let maxLength = articleElements[0].textContent.length;
-                    
-                    for (let i = 1; i < articleElements.length; i++) {
-                        const length = articleElements[i].textContent.length;
-                        if (length > maxLength) {
-                            maxLength = length;
-                            largestArticle = articleElements[i];
-                        }
-                    }
-                    
-                    contentElement = largestArticle;
-                }
-                
-                // Se non è stato trovato un elemento article valido, cerca nella sezione principale
-                if (!contentElement || contentElement.textContent.trim().length < 100) {
-                    const mainElements = domElement.querySelectorAll('main');
-                    if (mainElements.length > 0) {
-                        contentElement = mainElements[0];
-                    }
-                }
-                
-                // Se non è stato trovato né article né main, cerca div con classi o ID comuni per articoli
-                if (!contentElement || contentElement.textContent.trim().length < 100) {
-                    const potentialContainers = domElement.querySelectorAll('div[class*="article"], div[class*="content"], div[class*="post"], div[id*="article"], div[id*="content"], div[id*="post"], [itemprop="articleBody"]');
-                    if (potentialContainers.length > 0) {
-                        // Prendi il container più grande che è probabile contenga l'articolo
-                        let largestContainer = potentialContainers[0];
-                        let maxLength = largestContainer.textContent.length;
-                        
-                        for (let i = 1; i < potentialContainers.length; i++) {
-                            const currentLength = potentialContainers[i].textContent.length;
-                            if (currentLength > maxLength) {
-                                maxLength = currentLength;
-                                largestContainer = potentialContainers[i];
-                            }
-                        }
-                        
-                        contentElement = largestContainer;
-                    }
-                }
-                
-                // Se abbiamo trovato un elemento di contenuto, estraiamo il testo
-                if (contentElement && contentElement.textContent.trim().length > 100) {
-                    result.formattedContent = cleanAndFormatContent(contentElement);
-                    result.rawContent = extractRawText(contentElement);
-                    return result;
-                }
-                
-                // Strategia 4: Come ultima risorsa, cerca paragrafi lunghi
-                const paragraphs = domElement.querySelectorAll('p');
-                if (paragraphs.length > 0) {
-                    // Filtra i paragrafi che sono probabilmente parte dell'articolo
-                    const contentParagraphs = Array.from(paragraphs).filter(p => {
-                        const text = p.textContent.trim();
-                        return text.length > 80 && text.split(' ').length > 15;
-                    });
-                    
-                    if (contentParagraphs.length > 0) {
-                        result.formattedContent = contentParagraphs.map(p => `<p>${p.textContent}</p>`).join('');
-                        result.rawContent = contentParagraphs.map(p => p.textContent).join('\n\n');
-                        return result;
-                    }
-                }
-                
-                // Fallback: Prendi tutto il testo del body
-                const bodyText = domElement.querySelector('body').textContent.trim();
-                result.formattedContent = 'Impossibile identificare chiaramente il contenuto dell\'articolo.';
-                result.rawContent = 'Impossibile identificare chiaramente il contenuto dell\'articolo.';
-                return result;
-            }
-            
-            // Funzione per pulire e formattare il contenuto
-            function cleanAndFormatContent(element) {
-                // Clona l'elemento per non modificare l'originale
-                const clone = element.cloneNode(true);
-                
-                // Rimuovi elementi che non sono generalmente parte del contenuto
-                const elementsToRemove = [
-                    'script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 
-                    '.comments', '.sidebar', '.ad', '.advertisement', '.banner', '.share', '.social',
-                    '.related', '.recommended', 'figcaption', '.caption', '.newsletter'
-                ];
-                
-                elementsToRemove.forEach(selector => {
-                    const elements = clone.querySelectorAll(selector);
-                    elements.forEach(el => el.remove());
-                });
-                
-                // Estrai il testo formattato mantenendo paragrafi e titoli
-                let result = '';
-                const contentElements = clone.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
-                
-                contentElements.forEach(el => {
-                    const tagName = el.tagName.toLowerCase();
-                    const text = el.textContent.trim();
-                    
-                    if (text.length > 0) {
-                        if (tagName.startsWith('h')) {
-                            result += `<${tagName}>${text}</${tagName}>`;
-                        } else if (tagName === 'li') {
-                            result += `<li>${text}</li>`;
-                        } else if (tagName === 'blockquote') {
-                            result += `<blockquote>${text}</blockquote>`;
-                        } else {
-                            result += `<p>${text}</p>`;
-                        }
-                    }
-                });
-                
-                // Se non ci sono elementi formattati, prendi tutto il testo
-                if (result.trim() === '') {
-                    result = `<p>${clone.textContent.trim().replace(/[\n\r]+/g, '</p><p>').replace(/\s{2,}/g, ' ')}</p>`;
-                }
-                
-                return result;
-            }
-            
-            // Funzione per estrarre il testo raw
-            function extractRawText(element) {
-                // Clona l'elemento per non modificare l'originale
-                const clone = element.cloneNode(true);
-                
-                // Rimuovi elementi che non sono generalmente parte del contenuto
-                const elementsToRemove = [
-                    'script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 
-                    '.comments', '.sidebar', '.ad', '.advertisement', '.banner', '.share', '.social',
-                    '.related', '.recommended', 'figcaption', '.caption', '.newsletter'
-                ];
-                
-                elementsToRemove.forEach(selector => {
-                    const elements = clone.querySelectorAll(selector);
-                    elements.forEach(el => el.remove());
-                });
-                
-                // Estrai paragrafi e titoli
-                const paragraphs = [];
-                const contentElements = clone.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
-                
-                contentElements.forEach(el => {
-                    const tagName = el.tagName.toLowerCase();
-                    const text = el.textContent.trim();
-                    
-                    if (text.length > 0) {
-                        if (tagName.startsWith('h')) {
-                            // Aggiungi spazio extra per i titoli
-                            paragraphs.push(text + "\n");
-                        } else {
-                            paragraphs.push(text);
-                        }
-                    }
-                });
-                
-                // Se non ci sono elementi, prendi tutto il testo
-                if (paragraphs.length === 0) {
-                    return clone.textContent.trim()
-                        .replace(/[\n\r]+/g, '\n\n')
-                        .replace(/\s{2,}/g, ' ');
-                }
-                
-                return paragraphs.join('\n\n');
-            }
-            
-            // Funzione per aggiornare la tabella degli articoli salvati
-            function updateSavedArticlesTable() {
-                // Mostra il container degli articoli salvati se ci sono articoli
-                if (savedArticles.length > 0) {
-                    savedArticlesContainer.style.display = 'block';
-                    
-                    // Pulisci la tabella
-                    savedArticlesBody.innerHTML = '';
-                    
-                    // Ordina gli articoli per data di creazione (più recenti prima)
-                    const sortedArticles = [...savedArticles].sort((a, b) => 
-                        new Date(b.createdDate) - new Date(a.createdDate)
-                    );
-                    
-                    // Aggiungi le righe per ogni articolo
-                    sortedArticles.forEach(article => {
-                        const row = document.createElement('tr');
-                        
-                        const titleCell = document.createElement('td');
-                        titleCell.textContent = article.title;
-                        row.appendChild(titleCell);
-                        
-                        const sourceCell = document.createElement('td');
-                        sourceCell.textContent = article.sourceName || 'N/A';
-                        row.appendChild(sourceCell);
-                        
-                        const authorCell = document.createElement('td');
-                        authorCell.textContent = article.author || 'N/A';
-                        row.appendChild(authorCell);
-                        
-                        const actionsCell = document.createElement('td');
-                        actionsCell.className = 'action-cell';
-                        
-                        // Pulsante Modifica
-                        const editBtn = document.createElement('button');
-                        editBtn.textContent = 'Modifica';
-                        editBtn.addEventListener('click', () => editArticle(article.id));
-                        actionsCell.appendChild(editBtn);
-                        
-                        // Pulsante Elimina
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Elimina';
-                        deleteBtn.style.backgroundColor = '#f44336';
-                        deleteBtn.addEventListener('click', () => deleteArticle(article.id));
-                        actionsCell.appendChild(deleteBtn);
-                        
-                        row.appendChild(actionsCell);
-                        
-                        savedArticlesBody.appendChild(row);
-                    });
-                    
-                    // Mostra o nascondi il pulsante di generazione rassegna stampa
-                    generatePressReviewBtn.style.display = savedArticles.length > 0 ? 'inline-block' : 'none';
-                } else {
-                    savedArticlesBody.innerHTML = '<tr><td colspan="4">Nessun articolo salvato.</td></tr>';
-                    generatePressReviewBtn.style.display = 'none';
-                }
-            }
-            
-            // Funzione per modificare un articolo
-            function editArticle(articleId) {
-                const article = savedArticles.find(a => a.id === articleId);
-                if (!article) return;
-                
-                // Popola i campi con i dati dell'articolo
-                titleField.value = article.title;
-                authorField.value = article.author || '';
-                urlField.value = article.url || '';
-                sourceNameField.value = article.sourceName || '';
-                contentField.value = article.content;
-                
-                // Salva riferimento all'articolo corrente
-                currentEditArticle = article;
-                
-                // Mostra i risultati dell'estrazione
-                extractionResults.style.display = 'block';
-                
-                // Scorrimento verso l'alto
-                window.scrollTo(0, 0);
-                
-                showStatus('success', 'Modifica l\'articolo e salva le modifiche.');
-            }
-            
-            // Funzione per eliminare un articolo
-            function deleteArticle(articleId) {
-                if (confirm('Sei sicuro di voler eliminare questo articolo?')) {
-                    // Rimuovi l'articolo dall'array
-                    savedArticles = savedArticles.filter(a => a.id !== articleId);
-                    
-                    // Aggiorna il localStorage
-                    saveArticlesToLocalStorage();
-                    
-                    // Aggiorna la tabella
-                    updateSavedArticlesTable();
-                    
-                    showStatus('success', 'Articolo eliminato con successo.');
-                }
-            }
-            
-            // Funzione per generare la rassegna stampa
-            function generatePressReview() {
-                const currentDate = new Date();
-                const formattedDate = formatDate(currentDate);
-                
-                // Crea l'intestazione della rassegna stampa
-                let reviewHTML = `
-                    <div class="press-review-header">
-                        <div class="press-review-title">Rassegna Stampa</div>
-                        <div class="press-review-date">${formattedDate}</div>
-                    </div>
-                    <div class="press-review-articles">
-                `;
-                
-                // Aggiungi ogni articolo
-                savedArticles.forEach(article => {
-                    reviewHTML += `
-                        <div class="press-review-article">
-                            <div class="article-title">${article.title}</div>
-                            <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
-                            ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
-                            <div class="article-content">
-                                ${formatArticleForReview(article.content)}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                reviewHTML += '</div>'; // Chiudi press-review-articles
-                
-                // Imposta il contenuto nel modal
-                pressReviewContent.innerHTML = reviewHTML;
-            }
-            
-            // Funzione per formattare l'articolo per la rassegna
-            function formatArticleForReview(content) {
-                // Se il contenuto è già in HTML, mantienilo come tale
-                if (content.includes('<p>') || content.includes('<h')) {
-                    return content;
-                }
-                
-                // Altrimenti, converti le interruzioni di riga in paragrafi
-                return content.split('\n\n')
-                    .map(paragraph => paragraph.trim())
-                    .filter(paragraph => paragraph.length > 0)
-                    .map(paragraph => `<p>${paragraph}</p>`)
-                    .join('');
-            }
-            
-            // Funzione per prepararsi all'esportazione dei dati
-            function prepareExport() {
-                // Nasconde/mostra i pulsanti appropriati
-                confirmImportBtn.style.display = 'none';
-                copyExportBtn.style.display = 'inline-block';
-                downloadCsvBtn.style.display = 'inline-block';
-                
-                // Imposta il titolo e la descrizione
-                importExportTitle.textContent = 'Esporta Dati';
-                importExportDescription.textContent = 'Copia i dati sottostanti o salvali in un file CSV per backup.';
-                
-                // Genera il CSV
-                const csvContent = generateCSV();
-                importExportTextarea.value = csvContent;
-            }
-            
-            // Funzione per prepararsi all'importazione dei dati
-            function prepareImport() {
-                // Nasconde/mostra i pulsanti appropriati
-                confirmImportBtn.style.display = 'inline-block';
-                copyExportBtn.style.display = 'none';
-                downloadCsvBtn.style.display = 'none';
-                
-                // Imposta il titolo e la descrizione
-                importExportTitle.textContent = 'Importa Dati';
-                importExportDescription.textContent = 'Incolla qui i dati CSV da importare.';
-                
-                // Pulisci l'area di testo
-                importExportTextarea.value = '';
-            }
-            
-            // Funzione per generare CSV dagli articoli
-            function generateCSV() {
-                // Intestazioni CSV
-                const headers = ['id', 'title', 'author', 'sourceName', 'url', 'content', 'createdDate', 'modifiedDate'];
-                
-                // Crea la riga di intestazione
-                let csv = headers.join(',') + '\n';
-                
-                // Aggiungi ogni articolo
-                savedArticles.forEach(article => {
-                    const row = headers.map(header => {
-                        // Gestisci i campi di testo con virgole o virgolette
-                        if (typeof article[header] === 'string') {
-                            // Sostituisci le virgolette con doppia virgoletta (standard CSV)
-                            const escaped = article[header].replace(/"/g, '""');
-                            // Racchiudi tra virgolette per gestire virgole e interruzioni di riga
-                            return `"${escaped}"`;
-                        }
-                        return article[header] || '';
-                    });
-                    
-                    csv += row.join(',') + '\n';
-                });
-                
-                return csv;
-            }
-            
-            // Funzione per analizzare dati CSV
-            function parseCSV(csvData) {
-                const rows = csvData.split('\n');
-                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                
-                // Verifica che i dati contengano le intestazioni necessarie
-                const requiredHeaders = ['title', 'content'];
-                const hasRequiredHeaders = requiredHeaders.every(header => 
-                    headers.includes(header)
-                );
-                
-                if (!hasRequiredHeaders) {
-                    throw new Error('Il formato CSV non è valido. Mancano intestazioni obbligatorie.');
-                }
-                
-                const articles = [];
-                
-                // Analizza le righe di dati (salta l'intestazione)
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i].trim();
-                    if (!row) continue; // Salta righe vuote
-                    
-                    // Gestisce valori tra virgolette contenenti virgole
-                    let values = [];
-                    let inQuotes = false;
-                    let currentValue = '';
-                    
-                    for (let j = 0; j < row.length; j++) {
-                        const char = row[j];
-                        
-                        if (char === '"') {
-                            if (j < row.length - 1 && row[j + 1] === '"') {
-                                // Gestisce le virgolette doppie escape
-                                currentValue += '"';
-                                j++; // Salta il carattere successivo
-                            } else {
-                                inQuotes = !inQuotes;
-                            }
-                        } else if (char === ',' && !inQuotes) {
-                            values.push(currentValue);
-                            currentValue = '';
-                        } else {
-                            currentValue += char;
-                        }
-                    }
-                    
-                    // Aggiungi l'ultimo valore
-                    values.push(currentValue);
-                    
-                    // Crea un oggetto articolo con i valori analizzati
-                    const article = {};
-                    headers.forEach((header, index) => {
-                        if (index < values.length) {
-                            article[header] = values[index];
-                        } else {
-                            article[header] = '';
-                        }
-                    });
-                    
-                    // Verifica che l'articolo abbia i campi obbligatori
-                    if (article.title && article.content) {
-                        // Assicurati che ogni articolo abbia un ID unico
-                        if (!article.id) {
-                            article.id = generateUniqueId();
-                        }
-                        // Imposta date se mancanti
-                        if (!article.createdDate) {
-                            article.createdDate = new Date().toISOString();
-                        }
-                        if (!article.modifiedDate) {
-                            article.modifiedDate = new Date().toISOString();
-                        }
-                        
-                        articles.push(article);
-                    }
-                }
-                
-                return articles;
-            }
-            
-            // Funzione per generare un ID unico
-            function generateUniqueId() {
-                return Date.now().toString(36) + Math.random().toString(36).substring(2);
-            }
-            
-            // Funzione per formattare la data
-            function formatDate(date) {
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                return date.toLocaleDateString('it-IT', options);
-            }
-            
-            // Funzione per formattare la data nel nome del file
-            function formatDateFileName(date) {
-                return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-            }
-            
-            // Funzione per salvare gli articoli nel localStorage
-            function saveArticlesToLocalStorage() {
-                localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
-            }
-            
-            // Funzione per salvare le rassegne nel localStorage
-            function saveReviewsToLocalStorage() {
-                localStorage.setItem('savedPressReviews', JSON.stringify(savedPressReviews));
-            }
-            
-            // Funzione per caricare i dati salvati dal localStorage
-            function loadSavedData() {
-                // Carica gli articoli
-                const savedArticlesJson = localStorage.getItem('savedArticles');
-                if (savedArticlesJson) {
-                    try {
-                        savedArticles = JSON.parse(savedArticlesJson);
-                        updateSavedArticlesTable();
-                    } catch (e) {
-                        console.error('Errore nel caricamento degli articoli salvati:', e);
-                    }
-                }
-                
-                // Carica le rassegne
-                const savedReviewsJson = localStorage.getItem('savedPressReviews');
-                if (savedReviewsJson) {
-                    try {
-                        savedPressReviews = JSON.parse(savedReviewsJson);
-                        updateSavedReviewsList();
-                    } catch (e) {
-                        console.error('Errore nel caricamento delle rassegne salvate:', e);
-                    }
-                }
-            }
-            
-            // Funzione per resettare i campi di estrazione
-            function resetExtractionFields() {
-                titleField.value = '';
-                authorField.value = '';
-                urlField.value = '';
-                sourceNameField.value = '';
-                contentField.value = '';
-            }
-            
-            // Inizializza la pagina
-            updateSavedArticlesTable();
-            updateSavedReviewsList();
-        });
-    </script>
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -2172,4 +1420,762 @@ p {
                                 font-family: 'Times New Roman', Times, serif;
                             }
                             .article-author {
-                                font-weight: bol
+                                font-weight: bold
+                                    margin-bottom: 5px;
+                                font-family: 'Times New Roman', Times, serif;
+                            }
+                  }
+                });
+// Funzione per aggiornare la lista delle rassegne salvate
+            function updateSavedReviewsList() {
+                const savedReviewsContainer = document.getElementById('saved-reviews-container');
+                const savedReviewsBody = document.getElementById('saved-reviews-body');
+                
+                // Mostra il container delle rassegne salvate se ci sono rassegne
+                if (savedPressReviews && savedPressReviews.length > 0) {
+                    savedReviewsContainer.style.display = 'block';
+                    
+                    // Pulisci la tabella
+                    savedReviewsBody.innerHTML = '';
+                    
+                    // Ordina le rassegne per data (più recenti prima)
+                    const sortedReviews = [...savedPressReviews].sort((a, b) => 
+                        new Date(b.date) - new Date(a.date)
+                    );
+                    
+                    // Aggiungi le righe per ogni rassegna
+                    sortedReviews.forEach(review => {
+                        const row = document.createElement('tr');
+                        
+                        const titleCell = document.createElement('td');
+                        titleCell.textContent = review.title;
+                        row.appendChild(titleCell);
+                        
+                        const dateCell = document.createElement('td');
+                        dateCell.textContent = new Date(review.date).toLocaleDateString('it-IT');
+                        row.appendChild(dateCell);
+                        
+                        const articlesCountCell = document.createElement('td');
+                        articlesCountCell.textContent = review.articles ? review.articles.length : 0;
+                        row.appendChild(articlesCountCell);
+                        
+                        const actionsCell = document.createElement('td');
+                        actionsCell.className = 'action-cell';
+                        
+                        // Pulsante Visualizza
+                        const viewBtn = document.createElement('button');
+                        viewBtn.textContent = 'Visualizza';
+                        viewBtn.style.backgroundColor = '#2196F3';
+                        viewBtn.addEventListener('click', () => viewReview(review.id));
+                        actionsCell.appendChild(viewBtn);
+                        
+                        // Pulsante Elimina
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Elimina';
+                        deleteBtn.style.backgroundColor = '#f44336';
+                        deleteBtn.addEventListener('click', () => deleteReview(review.id));
+                        actionsCell.appendChild(deleteBtn);
+                        
+                        row.appendChild(actionsCell);
+                        
+                        savedReviewsBody.appendChild(row);
+                    });
+                } else {
+                    savedReviewsContainer.style.display = 'none';
+                }
+            }
+            
+            // Funzione per visualizzare una rassegna salvata
+            function viewReview(reviewId) {
+                const review = savedPressReviews.find(r => r.id === reviewId);
+                if (!review) return;
+                
+                // Imposta il contenuto nel modal
+                viewReviewContent.innerHTML = review.htmlContent;
+                viewReviewContent.dataset.reviewId = reviewId;
+                
+                // Mostra il modal
+                viewReviewModal.style.display = 'block';
+            }
+            
+            // Funzione per eliminare una rassegna
+            function deleteReview(reviewId) {
+                if (confirm('Sei sicuro di voler eliminare questa rassegna stampa?')) {
+                    // Rimuovi la rassegna dall'array
+                    // Rimuovi la rassegna dall'array
+                    savedPressReviews = savedPressReviews.filter(r => r.id !== reviewId);
+                    
+                    // Aggiorna il localStorage
+                    saveReviewsToLocalStorage();
+                    
+                    // Aggiorna la tabella
+                    updateSavedReviewsList();
+                    
+                    showStatus('success', 'Rassegna stampa eliminata con successo.');
+                }
+            }
+            
+            // Funzione per mostrare messaggi di stato
+            function showStatus(type, message) {
+                statusMessage.textContent = message;
+                statusMessage.className = '';
+                
+                if (type === 'error') {
+                    statusMessage.classList.add('error');
+                } else if (type === 'success') {
+                    statusMessage.classList.add('success');
+                } else if (type === 'loading') {
+                    statusMessage.classList.add('loading');
+                }
+            }
+            
+            // Funzione per estrarre le informazioni dell'articolo
+            function extractArticleInfo(domElement, url) {
+                // Oggetto che conterrà tutte le informazioni estratte
+                const articleInfo = {
+                    title: '',
+                    author: '',
+                    content: '',
+                    rawContent: ''
+                };
+                
+                // Estrai il titolo
+                articleInfo.title = extractTitle(domElement);
+                
+                // Estrai l'autore
+                articleInfo.author = extractAuthor(domElement);
+                
+                // Estrai il contenuto dell'articolo
+                const contentResult = extractArticleContent(domElement);
+                articleInfo.content = contentResult.formattedContent;
+                articleInfo.rawContent = contentResult.rawContent;
+                
+                return articleInfo;
+            }
+            
+            // Funzione per estrarre il titolo
+            function extractTitle(domElement) {
+                // Strategia 1: Cerca il tag title
+                const titleTag = domElement.querySelector('title');
+                if (titleTag && titleTag.textContent.trim()) {
+                    // Pulisci il titolo (rimuovi il nome del sito se presente)
+                    let title = titleTag.textContent.trim();
+                    // Rimuovi parti comuni alla fine del titolo come " | Nome del sito"
+                    title = title.split(/\s[|\-–—]\s/)[0];
+                    return title;
+                }
+                
+                // Strategia 2: Cerca l'elemento h1
+                const h1Tags = domElement.querySelectorAll('h1');
+                if (h1Tags.length > 0) {
+                    // Prendi l'h1 più lungo come probabile titolo
+                    let longestH1 = '';
+                    for (const h1 of h1Tags) {
+                        const text = h1.textContent.trim();
+                        if (text.length > longestH1.length) {
+                            longestH1 = text;
+                        }
+                    }
+                    if (longestH1) return longestH1;
+                }
+                
+                // Strategia 3: Cerca meta tags
+                const metaTitleTag = domElement.querySelector('meta[property="og:title"], meta[name="twitter:title"]');
+                if (metaTitleTag && metaTitleTag.getAttribute('content')) {
+                    return metaTitleTag.getAttribute('content').trim();
+                }
+                
+                // Strategia 4: Cerca elementi con classe o id che contengono "title"
+                const titleElements = domElement.querySelectorAll('[class*="title"], [id*="title"], .headline, .heading');
+                if (titleElements.length > 0) {
+                    for (const el of titleElements) {
+                        const text = el.textContent.trim();
+                        if (text.length > 10 && text.length < 200) {
+                            return text;
+                        }
+                    }
+                }
+                
+                return 'Titolo non trovato';
+            }
+            
+            // Funzione per estrarre l'autore
+            function extractAuthor(domElement) {
+                // Strategia 1: Cerca meta tags per l'autore
+                const metaAuthorTag = domElement.querySelector('meta[name="author"], meta[property="article:author"], meta[name="twitter:creator"]');
+                if (metaAuthorTag && metaAuthorTag.getAttribute('content')) {
+                    return metaAuthorTag.getAttribute('content').trim();
+                }
+                
+                // Strategia 2: Cerca elementi con classe o id che contengono "author"
+                const authorSelectors = [
+                    '[class*="author"]', 
+                    '[id*="author"]', 
+                    '[rel="author"]',
+                    '.byline',
+                    '.writer',
+                    '[class*="byline"]',
+                    '[class*="by-"]'
+                ];
+                
+                const authorElements = domElement.querySelectorAll(authorSelectors.join(', '));
+                if (authorElements.length > 0) {
+                    for (const el of authorElements) {
+                        const text = el.textContent.trim();
+                        // Evita testi troppo lunghi o troppo corti
+                        if (text.length > 3 && text.length < 100) {
+                            // Cerca di pulire il testo (rimuovere "By", "Author:", ecc.)
+                            let cleanedText = text.replace(/^(by|author|written by|posted by)[\s:]+/i, '').trim();
+                            // Se il testo è ancora valido, restituiscilo
+                            if (cleanedText.length > 3) {
+                                return cleanedText;
+                            }
+                        }
+                    }
+                }
+                
+                // Strategia 3: Cerca schemi strutturati (Schema.org)
+                const personElements = domElement.querySelectorAll('[itemtype*="schema.org/Person"]');
+                if (personElements.length > 0) {
+                    for (const el of personElements) {
+                        const nameEl = el.querySelector('[itemprop="name"]');
+                        if (nameEl && nameEl.textContent.trim()) {
+                            return nameEl.textContent.trim();
+                        }
+                    }
+                }
+                
+                return '';
+            }
+            
+            // Funzione per estrarre il contenuto dell'articolo
+            function extractArticleContent(domElement) {
+                // Risultato dell'estrazione
+                const result = {
+                    formattedContent: '',
+                    rawContent: ''
+                };
+                
+                // Strategia 1: Cerca elementi con tag semantici per articoli
+                let contentElement = null;
+                
+                // Cerca l'elemento article
+                const articleElements = domElement.querySelectorAll('article');
+                if (articleElements.length > 0) {
+                    // Prendi l'elemento article più grande
+                    let largestArticle = articleElements[0];
+                    let maxLength = articleElements[0].textContent.length;
+                    
+                    for (let i = 1; i < articleElements.length; i++) {
+                        const length = articleElements[i].textContent.length;
+                        if (length > maxLength) {
+                            maxLength = length;
+                            largestArticle = articleElements[i];
+                        }
+                    }
+                    
+                    contentElement = largestArticle;
+                }
+                
+                // Se non è stato trovato un elemento article valido, cerca nella sezione principale
+                if (!contentElement || contentElement.textContent.trim().length < 100) {
+                    const mainElements = domElement.querySelectorAll('main');
+                    if (mainElements.length > 0) {
+                        contentElement = mainElements[0];
+                    }
+                }
+                
+                // Se non è stato trovato né article né main, cerca div con classi o ID comuni per articoli
+                if (!contentElement || contentElement.textContent.trim().length < 100) {
+                    const potentialContainers = domElement.querySelectorAll('div[class*="article"], div[class*="content"], div[class*="post"], div[id*="article"], div[id*="content"], div[id*="post"], [itemprop="articleBody"]');
+                    if (potentialContainers.length > 0) {
+                        // Prendi il container più grande che è probabile contenga l'articolo
+                        let largestContainer = potentialContainers[0];
+                        let maxLength = largestContainer.textContent.length;
+                        
+                        for (let i = 1; i < potentialContainers.length; i++) {
+                            const currentLength = potentialContainers[i].textContent.length;
+                            if (currentLength > maxLength) {
+                                maxLength = currentLength;
+                                largestContainer = potentialContainers[i];
+                            }
+                        }
+                        
+                        contentElement = largestContainer;
+                    }
+                }
+                
+                // Se abbiamo trovato un elemento di contenuto, estraiamo il testo
+                if (contentElement && contentElement.textContent.trim().length > 100) {
+                    result.formattedContent = cleanAndFormatContent(contentElement);
+                    result.rawContent = extractRawText(contentElement);
+                    return result;
+                }
+                
+                // Strategia 4: Come ultima risorsa, cerca paragrafi lunghi
+                const paragraphs = domElement.querySelectorAll('p');
+                if (paragraphs.length > 0) {
+                    // Filtra i paragrafi che sono probabilmente parte dell'articolo
+                    const contentParagraphs = Array.from(paragraphs).filter(p => {
+                        const text = p.textContent.trim();
+                        return text.length > 80 && text.split(' ').length > 15;
+                    });
+                    
+                    if (contentParagraphs.length > 0) {
+                        result.formattedContent = contentParagraphs.map(p => `<p>${p.textContent}</p>`).join('');
+                        result.rawContent = contentParagraphs.map(p => p.textContent).join('\n\n');
+                        return result;
+                    }
+                }
+                
+                // Fallback: Prendi tutto il testo del body
+                const bodyText = domElement.querySelector('body').textContent.trim();
+                result.formattedContent = 'Impossibile identificare chiaramente il contenuto dell\'articolo.';
+                result.rawContent = 'Impossibile identificare chiaramente il contenuto dell\'articolo.';
+                return result;
+            }
+            
+            // Funzione per pulire e formattare il contenuto
+            function cleanAndFormatContent(element) {
+                // Clona l'elemento per non modificare l'originale
+                const clone = element.cloneNode(true);
+                
+                // Rimuovi elementi che non sono generalmente parte del contenuto
+                const elementsToRemove = [
+                    'script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 
+                    '.comments', '.sidebar', '.ad', '.advertisement', '.banner', '.share', '.social',
+                    '.related', '.recommended', 'figcaption', '.caption', '.newsletter'
+                ];
+                
+                elementsToRemove.forEach(selector => {
+                    const elements = clone.querySelectorAll(selector);
+                    elements.forEach(el => el.remove());
+                });
+                
+                // Estrai il testo formattato mantenendo paragrafi e titoli
+                let result = '';
+                const contentElements = clone.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+                
+                contentElements.forEach(el => {
+                    const tagName = el.tagName.toLowerCase();
+                    const text = el.textContent.trim();
+                    
+                    if (text.length > 0) {
+                        if (tagName.startsWith('h')) {
+                            result += `<${tagName}>${text}</${tagName}>`;
+                        } else if (tagName === 'li') {
+                            result += `<li>${text}</li>`;
+                        } else if (tagName === 'blockquote') {
+                            result += `<blockquote>${text}</blockquote>`;
+                        } else {
+                            result += `<p>${text}</p>`;
+                        }
+                    }
+                });
+                
+                // Se non ci sono elementi formattati, prendi tutto il testo
+                if (result.trim() === '') {
+                    result = `<p>${clone.textContent.trim().replace(/[\n\r]+/g, '</p><p>').replace(/\s{2,}/g, ' ')}</p>`;
+                }
+                
+                return result;
+            }
+            
+            // Funzione per estrarre il testo raw
+            function extractRawText(element) {
+                // Clona l'elemento per non modificare l'originale
+                const clone = element.cloneNode(true);
+                
+                // Rimuovi elementi che non sono generalmente parte del contenuto
+                const elementsToRemove = [
+                    'script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 
+                    '.comments', '.sidebar', '.ad', '.advertisement', '.banner', '.share', '.social',
+                    '.related', '.recommended', 'figcaption', '.caption', '.newsletter'
+                ];
+                
+                elementsToRemove.forEach(selector => {
+                    const elements = clone.querySelectorAll(selector);
+                    elements.forEach(el => el.remove());
+                });
+                
+                // Estrai paragrafi e titoli
+                const paragraphs = [];
+                const contentElements = clone.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+                
+                contentElements.forEach(el => {
+                    const tagName = el.tagName.toLowerCase();
+                    const text = el.textContent.trim();
+                    
+                    if (text.length > 0) {
+                        if (tagName.startsWith('h')) {
+                            // Aggiungi spazio extra per i titoli
+                            paragraphs.push(text + "\n");
+                        } else {
+                            paragraphs.push(text);
+                        }
+                    }
+                });
+                
+                // Se non ci sono elementi, prendi tutto il testo
+                if (paragraphs.length === 0) {
+                    return clone.textContent.trim()
+                        .replace(/[\n\r]+/g, '\n\n')
+                        .replace(/\s{2,}/g, ' ');
+                }
+                
+                return paragraphs.join('\n\n');
+            }
+            
+            // Funzione per aggiornare la tabella degli articoli salvati
+            function updateSavedArticlesTable() {
+                // Mostra il container degli articoli salvati se ci sono articoli
+                if (savedArticles.length > 0) {
+                    savedArticlesContainer.style.display = 'block';
+                    
+                    // Pulisci la tabella
+                    savedArticlesBody.innerHTML = '';
+                    
+                    // Ordina gli articoli per data di creazione (più recenti prima)
+                    const sortedArticles = [...savedArticles].sort((a, b) => 
+                        new Date(b.createdDate) - new Date(a.createdDate)
+                    );
+                    
+                    // Aggiungi le righe per ogni articolo
+                    sortedArticles.forEach(article => {
+                        const row = document.createElement('tr');
+                        
+                        const titleCell = document.createElement('td');
+                        titleCell.textContent = article.title;
+                        row.appendChild(titleCell);
+                        
+                        const sourceCell = document.createElement('td');
+                        sourceCell.textContent = article.sourceName || 'N/A';
+                        row.appendChild(sourceCell);
+                        
+                        const authorCell = document.createElement('td');
+                        authorCell.textContent = article.author || 'N/A';
+                        row.appendChild(authorCell);
+                        
+                        const actionsCell = document.createElement('td');
+                        actionsCell.className = 'action-cell';
+                        
+                        // Pulsante Modifica
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Modifica';
+                        editBtn.addEventListener('click', () => editArticle(article.id));
+                        actionsCell.appendChild(editBtn);
+                        
+                        // Pulsante Elimina
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Elimina';
+                        deleteBtn.style.backgroundColor = '#f44336';
+                        deleteBtn.addEventListener('click', () => deleteArticle(article.id));
+                        actionsCell.appendChild(deleteBtn);
+                        
+                        row.appendChild(actionsCell);
+                        
+                        savedArticlesBody.appendChild(row);
+                    });
+                    
+                    // Mostra o nascondi il pulsante di generazione rassegna stampa
+                    generatePressReviewBtn.style.display = savedArticles.length > 0 ? 'inline-block' : 'none';
+                } else {
+                    savedArticlesBody.innerHTML = '<tr><td colspan="4">Nessun articolo salvato.</td></tr>';
+                    generatePressReviewBtn.style.display = 'none';
+                }
+            }
+            
+            // Funzione per modificare un articolo
+            function editArticle(articleId) {
+                const article = savedArticles.find(a => a.id === articleId);
+                if (!article) return;
+                
+                // Popola i campi con i dati dell'articolo
+                titleField.value = article.title;
+                authorField.value = article.author || '';
+                urlField.value = article.url || '';
+                sourceNameField.value = article.sourceName || '';
+                contentField.value = article.content;
+                
+                // Salva riferimento all'articolo corrente
+                currentEditArticle = article;
+                
+                // Mostra i risultati dell'estrazione
+                extractionResults.style.display = 'block';
+                
+                // Scorrimento verso l'alto
+                window.scrollTo(0, 0);
+                
+                showStatus('success', 'Modifica l\'articolo e salva le modifiche.');
+            }
+            
+            // Funzione per eliminare un articolo
+            function deleteArticle(articleId) {
+                if (confirm('Sei sicuro di voler eliminare questo articolo?')) {
+                    // Rimuovi l'articolo dall'array
+                    savedArticles = savedArticles.filter(a => a.id !== articleId);
+                    
+                    // Aggiorna il localStorage
+                    saveArticlesToLocalStorage();
+                    
+                    // Aggiorna la tabella
+                    updateSavedArticlesTable();
+                    
+                    showStatus('success', 'Articolo eliminato con successo.');
+                }
+            }
+            
+            // Funzione per generare la rassegna stampa
+            function generatePressReview() {
+                const currentDate = new Date();
+                const formattedDate = formatDate(currentDate);
+                
+                // Crea l'intestazione della rassegna stampa
+                let reviewHTML = `
+                    <div class="press-review-header">
+                        <div class="press-review-title">Rassegna Stampa</div>
+                        <div class="press-review-date">${formattedDate}</div>
+                    </div>
+                    <div class="press-review-articles">
+                `;
+                
+                // Aggiungi ogni articolo
+                savedArticles.forEach(article => {
+                    reviewHTML += `
+                        <div class="press-review-article">
+                            <div class="article-title">${article.title}</div>
+                            <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
+                            ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
+                            <div class="article-content">
+                                ${formatArticleForReview(article.content)}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                reviewHTML += '</div>'; // Chiudi press-review-articles
+                
+                // Imposta il contenuto nel modal
+                pressReviewContent.innerHTML = reviewHTML;
+            }
+            
+            // Funzione per formattare l'articolo per la rassegna
+            function formatArticleForReview(content) {
+                // Se il contenuto è già in HTML, mantienilo come tale
+                if (content.includes('<p>') || content.includes('<h')) {
+                    return content;
+                }
+                
+                // Altrimenti, converti le interruzioni di riga in paragrafi
+                return content.split('\n\n')
+                    .map(paragraph => paragraph.trim())
+                    .filter(paragraph => paragraph.length > 0)
+                    .map(paragraph => `<p>${paragraph}</p>`)
+                    .join('');
+            }
+            
+            // Funzione per prepararsi all'esportazione dei dati
+            function prepareExport() {
+                // Nasconde/mostra i pulsanti appropriati
+                confirmImportBtn.style.display = 'none';
+                copyExportBtn.style.display = 'inline-block';
+                downloadCsvBtn.style.display = 'inline-block';
+                
+                // Imposta il titolo e la descrizione
+                importExportTitle.textContent = 'Esporta Dati';
+                importExportDescription.textContent = 'Copia i dati sottostanti o salvali in un file CSV per backup.';
+                
+                // Genera il CSV
+                const csvContent = generateCSV();
+                importExportTextarea.value = csvContent;
+            }
+            
+            // Funzione per prepararsi all'importazione dei dati
+            function prepareImport() {
+                // Nasconde/mostra i pulsanti appropriati
+                confirmImportBtn.style.display = 'inline-block';
+                copyExportBtn.style.display = 'none';
+                downloadCsvBtn.style.display = 'none';
+                
+                // Imposta il titolo e la descrizione
+                importExportTitle.textContent = 'Importa Dati';
+                importExportDescription.textContent = 'Incolla qui i dati CSV da importare.';
+                
+                // Pulisci l'area di testo
+                importExportTextarea.value = '';
+            }
+            
+            // Funzione per generare CSV dagli articoli
+            function generateCSV() {
+                // Intestazioni CSV
+                const headers = ['id', 'title', 'author', 'sourceName', 'url', 'content', 'createdDate', 'modifiedDate'];
+                
+                // Crea la riga di intestazione
+                let csv = headers.join(',') + '\n';
+                
+                // Aggiungi ogni articolo
+                savedArticles.forEach(article => {
+                    const row = headers.map(header => {
+                        // Gestisci i campi di testo con virgole o virgolette
+                        if (typeof article[header] === 'string') {
+                            // Sostituisci le virgolette con doppia virgoletta (standard CSV)
+                            const escaped = article[header].replace(/"/g, '""');
+                            // Racchiudi tra virgolette per gestire virgole e interruzioni di riga
+                            return `"${escaped}"`;
+                        }
+                        return article[header] || '';
+                    });
+                    
+                    csv += row.join(',') + '\n';
+                });
+                
+                return csv;
+            }
+            
+            // Funzione per analizzare dati CSV
+            function parseCSV(csvData) {
+                const rows = csvData.split('\n');
+                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                
+                // Verifica che i dati contengano le intestazioni necessarie
+                const requiredHeaders = ['title', 'content'];
+                const hasRequiredHeaders = requiredHeaders.every(header => 
+                    headers.includes(header)
+                );
+                
+                if (!hasRequiredHeaders) {
+                    throw new Error('Il formato CSV non è valido. Mancano intestazioni obbligatorie.');
+                }
+                
+                const articles = [];
+                
+                // Analizza le righe di dati (salta l'intestazione)
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].trim();
+                    if (!row) continue; // Salta righe vuote
+                    
+                    // Gestisce valori tra virgolette contenenti virgole
+                    let values = [];
+                    let inQuotes = false;
+                    let currentValue = '';
+                    
+                    for (let j = 0; j < row.length; j++) {
+                        const char = row[j];
+                        
+                        if (char === '"') {
+                            if (j < row.length - 1 && row[j + 1] === '"') {
+                                // Gestisce le virgolette doppie escape
+                                currentValue += '"';
+                                j++; // Salta il carattere successivo
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(currentValue);
+                            currentValue = '';
+                        } else {
+                            currentValue += char;
+                        }
+                    }
+                    
+                    // Aggiungi l'ultimo valore
+                    values.push(currentValue);
+                    
+                    // Crea un oggetto articolo con i valori analizzati
+                    const article = {};
+                    headers.forEach((header, index) => {
+                        if (index < values.length) {
+                            article[header] = values[index];
+                        } else {
+                            article[header] = '';
+                        }
+                    });
+                    
+                    // Verifica che l'articolo abbia i campi obbligatori
+                    if (article.title && article.content) {
+                        // Assicurati che ogni articolo abbia un ID unico
+                        if (!article.id) {
+                            article.id = generateUniqueId();
+                        }
+                        // Imposta date se mancanti
+                        if (!article.createdDate) {
+                            article.createdDate = new Date().toISOString();
+                        }
+                        if (!article.modifiedDate) {
+                            article.modifiedDate = new Date().toISOString();
+                        }
+                        
+                        articles.push(article);
+                    }
+                }
+                
+                return articles;
+            }
+            
+            // Funzione per generare un ID unico
+            function generateUniqueId() {
+                return Date.now().toString(36) + Math.random().toString(36).substring(2);
+            }
+            
+            // Funzione per formattare la data
+            function formatDate(date) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('it-IT', options);
+            }
+            
+            // Funzione per formattare la data nel nome del file
+            function formatDateFileName(date) {
+                return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            }
+            
+            // Funzione per salvare gli articoli nel localStorage
+            function saveArticlesToLocalStorage() {
+                localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+            }
+            
+            // Funzione per salvare le rassegne nel localStorage
+            function saveReviewsToLocalStorage() {
+                localStorage.setItem('savedPressReviews', JSON.stringify(savedPressReviews));
+            }
+            
+            // Funzione per caricare i dati salvati dal localStorage
+            function loadSavedData() {
+                // Carica gli articoli
+                const savedArticlesJson = localStorage.getItem('savedArticles');
+                if (savedArticlesJson) {
+                    try {
+                        savedArticles = JSON.parse(savedArticlesJson);
+                        updateSavedArticlesTable();
+                    } catch (e) {
+                        console.error('Errore nel caricamento degli articoli salvati:', e);
+                    }
+                }
+                
+                // Carica le rassegne
+                const savedReviewsJson = localStorage.getItem('savedPressReviews');
+                if (savedReviewsJson) {
+                    try {
+                        savedPressReviews = JSON.parse(savedReviewsJson);
+                        updateSavedReviewsList();
+                    } catch (e) {
+                        console.error('Errore nel caricamento delle rassegne salvate:', e);
+                    }
+                }
+            }
+            
+            // Funzione per resettare i campi di estrazione
+            function resetExtractionFields() {
+                titleField.value = '';
+                authorField.value = '';
+                urlField.value = '';
+                sourceNameField.value = '';
+                contentField.value = '';
+            }
+            
+            // Inizializza la pagina
+            updateSavedArticlesTable();
+            updateSavedReviewsList();
+        });
+    </script>
+</body>
+</html>
