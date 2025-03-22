@@ -287,25 +287,7 @@
     hyphens: auto;
     margin-top: 5px;
 }
- .press-review-article:not(:last-child)::after {
-        content: '***'; /* Aggiungi l'asterisco */
-        display: block;
-        text-align: center; /* Centra l'asterisco */
-        margin: 20px 0; /* Aggiungi spazio sopra e sotto l'asterisco */
-        font-size: 18px; /* Dimensione dell'asterisco */
-        color: #000; /* Colore dell'asterisco */
-      }
- /* Aggiungi una riga orizzontale tra gli articoli */
-   /* .press-review-article:not(:last-child)::after {
-        content: '';
-        display: block;
-        width: 40%;
-        height: 1px;
-        background-color: #999;
-        margin: 15px auto;
-        break-inside: avoid;
-        page-break-inside: avoid;
-    } */
+
 
 .press-review-article {
  /*   break-inside: avoid; */
@@ -360,14 +342,23 @@
 }
  
 
-.press-review-article:not(:last-child)::after {
+/*.press-review-article:not(:last-child)::after {
     content: '';
     display: block;
     width: 40%;
     height: 1px;
     background-color: #999;
     margin: 15px auto;
-}
+}*/
+
+         .press-review-articles .press-review-article:not(:last-child)::after {
+        content: '*'; /* Aggiungi l'asterisco */
+        display: block;
+        text-align: center; /* Centra l'asterisco */
+        margin: 20px 0; /* Spazio sopra e sotto */
+        font-size: 18px; /* Dimensione dell'asterisco */
+        color: #000; /* Colore dell'asterisco */
+    }
         /* Rimuove le barre di scorrimento nella stampa */
         @media print {
             html, body {
