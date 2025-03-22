@@ -3,453 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generatore Rassegna Stampa</title>
+    <title>Estrattore di Testo da Articoli Web</title>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
         body {
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
             margin: 0 auto;
-            background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            line-height: 1.6;
         }
         h1 {
-            text-align: center;
-            margin-bottom: 30px;
             color: #333;
+            text-align: center;
         }
         .form-container {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, textarea {
-            width: 100%;
+        input[type="url"] {
+            width: 70%;
             padding: 10px;
+            margin-right: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 14px;
-        }
-        textarea {
-            min-height: 150px;
         }
         button {
-            cursor: pointer;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
             border: none;
             border-radius: 4px;
-            padding: 10px 15px;
-            font-weight: bold;
+            cursor: pointer;
         }
-        .btn-add {
-            background-color: #4a69bd;
-            color: white;
+        button:hover {
+            background-color: #45a049;
         }
-        .btn-add:hover {
-            background-color: #3c56a5;
-        }
-        .btn-generate {
-            background-color: #2ecc71;
-            color: white;
-            font-size: 16px;
-            padding: 12px 20px;
-        }
-        .btn-generate:hover {
-            background-color: #27ae60;
-        }
-        .btn-print {
-            background-color: #3498db;
-            color: white;
-        }
-        .btn-print:hover {
-            background-color: #2980b9;
-        }
-        .btn-back {
-            background-color: #7f8c8d;
-            color: white;
-        }
-        .btn-back:hover {
-            background-color: #6c7a89;
-        }
-        .btn-remove {
-            background-color: #e74c3c;
-            color: white;
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-        .btn-remove:hover {
-            background-color: #c0392b;
-        }
-        .article-list {
-            margin-bottom: 30px;
-        }
-        .article-item {
+        #result {
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 4px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
         }
-        .article-info h3 {
-            margin-top: 0;
-            margin-bottom: 5px;
+        .error {
+            color: red;
+            font-weight: bold;
         }
-        .article-info p {
+        .loading {
+            text-align: center;
+            font-style: italic;
             color: #666;
-            font-style: italic;
-            margin: 0;
-        }
-        .actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .preview-container {
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: white;
-        }
-        .rassegna-header {
-            text-align: center;
-            border-bottom: 2px solid black;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        .rassegna-title {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 10px 0;
-            font-family: "Times New Roman", Times, serif;
-        }
-        .rassegna-date {
-            font-style: italic;
-            font-family: "Times New Roman", Times, serif;
-        }
-        .rassegna-content {
-            column-count: 5;
-            column-gap: 15px;
-            font-family: "Times New Roman", Times, serif;
-        }
-        .rassegna-article {
-            break-inside: avoid;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-        .rassegna-article-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-family: "Times New Roman", Times, serif;
-        }
-        .rassegna-article-source {
-            font-style: italic;
-            font-size: 12px;
-            margin-bottom: 8px;
-            font-family: "Times New Roman", Times, serif;
-        }
-        .rassegna-article-content {
-            font-size: 12px;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            font-family: "Times New Roman", Times, serif;
-        }
-        @media print {
-            @page {
-                size: A4;
-                margin: 2cm;
-            }
-            .no-print {
-                display: none;
-            }
-            body {
-                background-color: white;
-                padding: 0;
-                margin: 0;
-            }
-            .container {
-                max-width: 100%;
-                padding: 0;
-                margin: 0;
-                box-shadow: none;
-                border-radius: 0;
-            }
-            .rassegna-content {
-                column-count: 5;
-                column-gap: 10px;
-            }
-        }
-        .hidden {
-            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="form-view">
-            <h1>Generatore di Rassegna Stampa</h1>
-            
-            <div class="form-container">
-                <h2>Inserisci un nuovo articolo</h2>
-                
-                <div class="form-group">
-                    <label for="title">Titolo*</label>
-                    <input type="text" id="title" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="source">Fonte</label>
-                    <input type="text" id="source">
-                </div>
-                
-                <div class="form-group">
-                    <label for="link">Link</label>
-                    <input type="url" id="link">
-                </div>
-                
-                <div class="form-group">
-                    <label for="content">Testo dell'articolo*</label>
-                    <textarea id="content" required></textarea>
-                </div>
-                
-                <button id="btn-add" class="btn-add">Aggiungi articolo</button>
-            </div>
-            
-            <div id="articles-container" class="article-list"></div>
-            
-            <div class="actions" id="generate-container" style="display:none;">
-                <button id="btn-generate" class="btn-generate">Genera Rassegna Stampa</button>
-            </div>
-        </div>
-        
-        <div id="preview-view" class="hidden">
-            <div class="preview-header">
-                <h2>Anteprima Rassegna Stampa</h2>
-                <div>
-                    <button id="btn-print" class="btn-print">Stampa PDF</button>
-                    <button id="btn-back" class="btn-back">Torna indietro</button>
-                </div>
-            </div>
-            
-            <div class="preview-container" id="rassegna-preview">
-                <div class="rassegna-header">
-                    <h1 class="rassegna-title">RASSEGNA STAMPA</h1>
-                    <p class="rassegna-date" id="current-date"></p>
-                </div>
-                
-                <div class="rassegna-content" id="rassegna-content">
-                    <!-- Gli articoli verranno inseriti qui -->
-                </div>
-            </div>
-        </div>
+    <h1>Estrattore di Testo da Articoli Web</h1>
+    
+    <div class="form-container">
+        <input type="url" id="url-input" placeholder="Inserisci l'URL dell'articolo..." required>
+        <button id="extract-button">Estrai Testo</button>
     </div>
-
+    
+    <div id="result">
+        <p>Il testo estratto dall'articolo apparirà qui.</p>
+    </div>
+    
     <script>
-        // Array per memorizzare gli articoli
-        let articles = [];
-        
-        // Elementi DOM
-        const formView = document.getElementById('form-view');
-        const previewView = document.getElementById('preview-view');
-        const titleInput = document.getElementById('title');
-        const sourceInput = document.getElementById('source');
-        const linkInput = document.getElementById('link');
-        const contentInput = document.getElementById('content');
-        const addButton = document.getElementById('btn-add');
-        const articlesContainer = document.getElementById('articles-container');
-        const generateContainer = document.getElementById('generate-container');
-        const generateButton = document.getElementById('btn-generate');
-        const printButton = document.getElementById('btn-print');
-        const backButton = document.getElementById('btn-back');
-        const rassegnaContent = document.getElementById('rassegna-content');
-        const currentDateElement = document.getElementById('current-date');
-        
-        // Funzione per ottenere la data corrente formattata
-        function getCurrentDate() {
-            const days = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
-            const months = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('url-input');
+            const extractButton = document.getElementById('extract-button');
+            const resultContainer = document.getElementById('result');
             
-            const today = new Date();
-            const dayName = days[today.getDay()];
-            const day = today.getDate();
-            const month = months[today.getMonth()];
-            const year = today.getFullYear();
-            
-            return `${dayName}, ${day} ${month} ${year}`;
-        }
-        
-        // Imposta la data corrente
-        currentDateElement.textContent = getCurrentDate();
-        
-        // Aggiungi un articolo
-        addButton.addEventListener('click', function() {
-            const title = titleInput.value.trim();
-            const source = sourceInput.value.trim();
-            const link = linkInput.value.trim();
-            const content = contentInput.value.trim();
-            
-            if (title && content) {
-                const article = {
-                    id: Date.now(),
-                    title,
-                    source,
-                    link,
-                    content
-                };
+            extractButton.addEventListener('click', function() {
+                const url = urlInput.value.trim();
                 
-                articles.push(article);
+                if (!url) {
+                    resultContainer.innerHTML = '<p class="error">Per favore, inserisci un URL valido.</p>';
+                    return;
+                }
                 
-                // Resetta il form
-                titleInput.value = '';
-                sourceInput.value = '';
-                linkInput.value = '';
-                contentInput.value = '';
+                // Mostra lo stato di caricamento
+                resultContainer.innerHTML = '<p class="loading">Estrazione in corso...</p>';
                 
-                // Aggiorna l'interfaccia
-                updateArticlesList();
-                generateContainer.style.display = 'block';
-            } else {
-                alert('Titolo e contenuto dell\'articolo sono obbligatori');
-            }
-        });
-        
-        // Rimuovi un articolo
-        function removeArticle(id) {
-            articles = articles.filter(article => article.id !== id);
-            updateArticlesList();
-            
-            if (articles.length === 0) {
-                generateContainer.style.display = 'none';
-            }
-        }
-        
-        // Aggiorna la lista degli articoli
-        function updateArticlesList() {
-            articlesContainer.innerHTML = '';
-            
-            if (articles.length > 0) {
-                const heading = document.createElement('h2');
-                heading.textContent = `Articoli inseriti (${articles.length})`;
-                articlesContainer.appendChild(heading);
+                // Utilizziamo un proxy CORS per aggirare le restrizioni di sicurezza
+                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
                 
-                articles.forEach(article => {
-                    const articleElement = document.createElement('div');
-                    articleElement.classList.add('article-item');
-                    
-                    const articleInfo = document.createElement('div');
-                    articleInfo.classList.add('article-info');
-                    
-                    const title = document.createElement('h3');
-                    title.textContent = article.title;
-                    articleInfo.appendChild(title);
-                    
-                    if (article.source) {
-                        const source = document.createElement('p');
-                        source.textContent = article.source;
-                        articleInfo.appendChild(source);
-                    }
-                    
-                    const removeButton = document.createElement('button');
-                    removeButton.classList.add('btn-remove');
-                    removeButton.textContent = 'Rimuovi';
-                    removeButton.addEventListener('click', function() {
-                        removeArticle(article.id);
+                fetch(proxyUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Errore durante il recupero della pagina web');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Crea un elemento DOM temporaneo per analizzare l'HTML
+                        const tempEl = document.createElement('div');
+                        tempEl.innerHTML = data.contents;
+                        
+                        // Tenta di estrarre il contenuto dell'articolo
+                        let articleText = extractArticleContent(tempEl);
+                        
+                        if (articleText.trim() === '') {
+                            resultContainer.innerHTML = '<p class="error">Nessun contenuto di articolo identificabile trovato.</p>';
+                        } else {
+                            resultContainer.innerHTML = articleText;
+                        }
+                    })
+                    .catch(error => {
+                        resultContainer.innerHTML = `<p class="error">Errore: ${error.message}</p>`;
                     });
-                    
-                    articleElement.appendChild(articleInfo);
-                    articleElement.appendChild(removeButton);
-                    
-                    articlesContainer.appendChild(articleElement);
-                });
-            }
-        }
-        
-        // Genera la rassegna stampa
-        generateButton.addEventListener('click', function() {
-            if (articles.length === 0) {
-                alert('Aggiungi almeno un articolo prima di generare la rassegna stampa');
-                return;
-            }
-            
-            // Popola la rassegna
-            rassegnaContent.innerHTML = '';
-            
-            articles.forEach(article => {
-                const articleElement = document.createElement('div');
-                articleElement.classList.add('rassegna-article');
-                
-                const title = document.createElement('h3');
-                title.classList.add('rassegna-article-title');
-                
-                if (article.link) {
-                    const linkElement = document.createElement('a');
-                    linkElement.href = article.link;
-                    linkElement.target = '_blank';
-                    linkElement.textContent = article.title;
-                    linkElement.style.color = 'black';
-                    linkElement.style.textDecoration = 'none';
-                    title.appendChild(linkElement);
-                } else {
-                    title.textContent = article.title;
-                }
-                
-                articleElement.appendChild(title);
-                
-                if (article.source) {
-                    const source = document.createElement('p');
-                    source.classList.add('rassegna-article-source');
-                    source.textContent = article.source;
-                    articleElement.appendChild(source);
-                }
-                
-                const content = document.createElement('div');
-                content.classList.add('rassegna-article-content');
-                content.textContent = article.content;
-                articleElement.appendChild(content);
-                
-                rassegnaContent.appendChild(articleElement);
             });
             
-            // Mostra la preview
-            formView.classList.add('hidden');
-            previewView.classList.remove('hidden');
-        });
-        
-        // Torna alla form
-        backButton.addEventListener('click', function() {
-            previewView.classList.add('hidden');
-            formView.classList.remove('hidden');
-        });
-        
-        // Stampa la rassegna
-        printButton.addEventListener('click', function() {
-            window.print();
+            function extractArticleContent(domElement) {
+                // Strategia 1: Cerca elementi con tag semantici per articoli
+                let content = '';
+                
+                // Cerca l'elemento article
+                const articleElements = domElement.querySelectorAll('article');
+                if (articleElements.length > 0) {
+                    // Prendi il primo elemento article
+                    const mainArticle = articleElements[0];
+                    content = cleanAndFormatContent(mainArticle);
+                    if (content.trim().length > 100) {
+                        return content;
+                    }
+                }
+                
+                // Strategia 2: Cerca contenuto nella sezione principale
+                const mainElements = domElement.querySelectorAll('main');
+                if (mainElements.length > 0) {
+                    const mainContent = mainElements[0];
+                    content = cleanAndFormatContent(mainContent);
+                    if (content.trim().length > 100) {
+                        return content;
+                    }
+                }
+                
+                // Strategia 3: Cerca div con classi o ID comuni per articoli
+                const potentialArticleContainers = domElement.querySelectorAll('div[class*="article"], div[class*="content"], div[class*="post"], div[id*="article"], div[id*="content"], div[id*="post"]');
+                if (potentialArticleContainers.length > 0) {
+                    // Prendi il container più grande che è probabile contenga l'articolo
+                    let largestContainer = potentialArticleContainers[0];
+                    let maxLength = largestContainer.textContent.length;
+                    
+                    for (let i = 1; i < potentialArticleContainers.length; i++) {
+                        const currentLength = potentialArticleContainers[i].textContent.length;
+                        if (currentLength > maxLength) {
+                            maxLength = currentLength;
+                            largestContainer = potentialArticleContainers[i];
+                        }
+                    }
+                    
+                    content = cleanAndFormatContent(largestContainer);
+                    if (content.trim().length > 100) {
+                        return content;
+                    }
+                }
+                
+                // Strategia 4: Cerca paragrafi lunghi
+                const paragraphs = domElement.querySelectorAll('p');
+                if (paragraphs.length > 0) {
+                    // Filtra i paragrafi che sono probabilmente parte dell'articolo
+                    const contentParagraphs = Array.from(paragraphs).filter(p => {
+                        const text = p.textContent.trim();
+                        return text.length > 50 && text.split(' ').length > 10;
+                    });
+                    
+                    if (contentParagraphs.length > 0) {
+                        content = contentParagraphs.map(p => `<p>${p.textContent}</p>`).join('');
+                        return content;
+                    }
+                }
+                
+                // Fallback: Ritorna tutto il contenuto testuale del corpo
+                return 'Nessun articolo identificato chiaramente. Ecco il testo della pagina:<br>' + 
+                       domElement.querySelector('body').textContent.trim()
+                       .replace(/[\n\r]+/g, '<br>')
+                       .replace(/\s{2,}/g, ' ');
+            }
+            
+            function cleanAndFormatContent(element) {
+                // Clona l'elemento per non modificare l'originale
+                const clone = element.cloneNode(true);
+                
+                // Rimuovi elementi che non sono generalmente parte del contenuto
+                const elementsToRemove = ['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', '.comments', '.sidebar', '.ad', '.advertisement', '.banner'];
+                elementsToRemove.forEach(selector => {
+                    const elements = clone.querySelectorAll(selector);
+                    elements.forEach(el => el.remove());
+                });
+                
+                // Estrai il testo formattato mantenendo paragrafi e titoli
+                let result = '';
+                const contentElements = clone.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+                
+                contentElements.forEach(el => {
+                    const tagName = el.tagName.toLowerCase();
+                    const text = el.textContent.trim();
+                    
+                    if (text.length > 0) {
+                        if (tagName.startsWith('h')) {
+                            result += `<${tagName}>${text}</${tagName}>`;
+                        } else if (tagName === 'li') {
+                            result += `<li>${text}</li>`;
+                        } else if (tagName === 'blockquote') {
+                            result += `<blockquote>${text}</blockquote>`;
+                        } else {
+                            result += `<p>${text}</p>`;
+                        }
+                    }
+                });
+                
+                // Se non ci sono elementi formattati, prendi tutto il testo
+                if (result.trim() === '') {
+                    result = `<p>${clone.textContent.trim().replace(/[\n\r]+/g, '</p><p>').replace(/\s{2,}/g, ' ')}</p>`;
+                }
+                
+                return result;
+            }
         });
     </script>
 </body>
