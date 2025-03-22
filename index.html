@@ -370,6 +370,15 @@
                 overflow: visible !important;
                 max-height: none !important;
             }
+               .press-review-article:not(:last-child)::after {
+        content: '';
+        display: block;
+        width: 40%;
+        height: 1px;
+        background-color: #999;
+        margin: 15px auto;
+        break-inside: avoid; /* Evita interruzioni di pagina */
+    }
         }
         .modal-buttons {
             margin-top: 20px;
@@ -437,7 +446,7 @@
             <button id="import-data-btn">Importa Dati</button>
             <button id="reset-data-btn">Elimina Tutti</button>
         </div>
-        
+        <br>
         <table class="saved-articles-table" id="saved-articles-table">
             <thead>
                 <tr>
