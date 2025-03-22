@@ -286,7 +286,7 @@
     margin-top: 5px;
 }
  /* Aggiungi una riga orizzontale tra gli articoli */
-    .press-review-article:not(:last-child)::after {
+   /* .press-review-article:not(:last-child)::after {
         content: '';
         display: block;
         width: 40%;
@@ -295,13 +295,13 @@
         margin: 15px auto;
         break-inside: avoid;
         page-break-inside: avoid;
-    }
+    } */
 
 .press-review-article {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin-bottom: 5px;
-    padding-bottom: 5px;
+ /*   break-inside: avoid; */
+ /*   page-break-inside: avoid; */
+    margin-bottom: 10px;
+    padding-bottom: 10px;
 }
         .article-title {
             font-size: 18px;
@@ -348,13 +348,7 @@
 .article-content p {
     text-indent: 20px; /* Mantiene il rientro per gli altri paragrafi */
 }
-        /* Assicurati che gli articoli non si spezzino tra le pagine */
-    .press-review-article {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-}
+ 
 
 .press-review-article:not(:last-child)::after {
     content: '';
