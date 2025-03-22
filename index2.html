@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fattariellows of the day</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        input[type="url"], input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #extraction-results {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .field-container {
+            margin-bottom: 20px;
+        }
+        .field-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea {
+            min-height: 300px;
+            resize: vertical;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #ffe6e6;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #e6ffe6;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            padding: 10px;
+        }
+        .info-text {
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        .action-buttons {
+            display: flex;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        #save-article-btn {
+            background-color: #2196F3;
+        }
+        #save-article-btn:hover {
+            background-color: #0b7dda;
+        }
+        #generate-press-review-btn {
+            background-color: #673AB7;
+        }
+        #generate-press-review-btn:hover {
+            background-color: #5E35B1;
+        }
+        #export-data-btn {
+            background-color: #FF9800;
+        }
+        #export-data-btn:hover {
+            background-color: #F57C00;
+        }
+        #reset-data-btn {
+            background-color: #f44336;
+        }
+        #reset-data-btn:hover {
+            background-color: #d32f2f;
+        }
+        #manual-input-btn {
+            background-color: #009688;
+        }
+        #manual-input-btn:hover {
+            background-color: #00796b;
+        }
+        
+        /* Stili per la tabella degli articoli salvati */
+        #saved-articles-container {
+            margin-top: 30px;
+            display: none;
+        }
+        .saved-articles-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .saved-articles-table th, .saved-articles-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .saved-articles-table th {
+            background-color: #f2f2f2;
+        }
+        .saved-articles-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .saved-articles-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .action-cell {
+            white-space: nowrap;
+        }
+        
+        /* Stili per la lista delle rassegne salvate */
+        #saved-reviews-container {
+            margin-top: 30px;
+            display: none;
+        }
+        .saved-reviews-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .saved-reviews-table th, .saved-reviews-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .saved-reviews-table th {
+            background-color: #f2f2f2;
+        }
+        .saved-reviews-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .saved-reviews-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Stili per il modal della rassegna stampa */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-modal:hover {
+            color: black;
+        }
+        
+        /* Stili per la visualizzazione della rassegna stampa */
+        @media print {
+            body * {
+                visibility: hidden;
+                font-family: 'Times New Roman', Times, serif !important;
+            }
+            #press-review-modal, #press-review-modal * {
+                visibility: visible;
+            }
+            #view-review-modal, #view-review-modal * {
+                visibility: visible;
+            }
+            #press-review-modal, #view-review-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: visible;
+                background-color: white;
+                border: none !important;
+            }
+            #press-review-content, #view-review-content {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+            }
+            .modal-header, .modal-buttons {
+                display: none !important;
+            }
+            .modal-content {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+        
+        #press-review-content, #view-review-content {
+            background-color: white;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .press-review-header {
+            text-align: center;
+            border-bottom: 2px solid black;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .press-review-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .press-review-date {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        /* Stile per l'anteprima (non stampata): articoli a tutta pagina */
+        .press-review-articles {
+            text-align: justify;
+            hyphens: auto;
+            margin-top: 5px;
+        }
+        
+        /* Stile per la stampa: articoli in due colonne */
+        @media print {
+            .press-review-articles {
+                column-count: 2;
+                column-gap: 20px;
+            }
+        }
+        
+        .press-review-article:not(:last-child)::after {
+            content: '';
+            display: block;
+            width: 40%;
+            height: 1px;
+            background-color: #999;
+            margin: 10px auto;
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+
+        .press-review-article {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+        }
+        .article-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .article-source {
+            font-style: italic;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .article-author {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .article-content {
+            font-size: 14px;
+            line-height: 1.4;
+            text-indent: 20px;
+        }
+        .article-content p:first-of-type:first-letter {
+            font-size: 42px;
+            font-weight: bold;
+            float: left;
+            margin-right: 6px;
+            margin-top: 0;
+            padding-top: 0;
+            line-height: 0.85;
+            height: 36px;
+        }
+
+        .article-content p:first-of-type {
+            text-indent: 0;  /* Rimuove il rientro dal primo paragrafo */
+        }
+
+        .article-content p {
+            text-indent: 20px; /* Mantiene il rientro per gli altri paragrafi */
+        }
+        
+        /* Rimuove le barre di scorrimento nella stampa */
+        @media print {
+            html, body {
+                overflow: visible !important;
+            }
+            ::-webkit-scrollbar {
+                display: none !important;
+            }
+            .modal-content {
+                overflow: visible !important;
+                max-height: none !important;
+            }
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        /* Stili per il modal di importazione/esportazione */
+        #import-export-modal textarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 15px;
+        }
+        
+        /* Stili per i tab */
+        .tabs {
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            padding: 10px 15px;
+            background-color: #f1f1f1;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 4px 4px 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fattariellows of the day</h1>
+    
+    <div class="tabs">
+        <button class="tab-button active" data-tab="url-tab">Estrai da URL</button>
+        <button class="tab-button" data-tab="manual-tab">Inserimento Manuale</button>
+    </div>
+    
+    <div id="url-tab" class="tab-content" style="display: block;">
+        <div class="form-container">
+            <input type="url" id="url-input" placeholder="Inserisci l'URL dell'articolo..." required>
+            <button id="extract-button">Estrai Articolo</button>
+        </div>
+    </div>
+    
+    <div id="manual-tab" class="tab-content">
+        <p>Inserisci manualmente i dettagli dell'articolo:</p>
+        <div class="form-container">
+            <div class="field-container">
+                <label class="field-label" for="manual-title">Titolo:</label>
+                <input type="text" id="manual-title" placeholder="Inserisci il titolo dell'articolo..." required>
+            </div>
+            
+            <div class="field-container">
+                <label class="field-label" for="manual-author">Autore:</label>
+                <input type="text" id="manual-author" placeholder="Inserisci l'autore dell'articolo...">
+            </div>
+            
+            <div class="field-container">
+                <label class="field-label" for="manual-source">Nome della Fonte:</label>
+                <input type="text" id="manual-source" placeholder="es. La Repubblica, Il Corriere della Sera, ecc.">
+            </div>
+            
+            <div class="field-container">
+                <label class="field-label" for="manual-url">URL (opzionale):</label>
+                <input type="text" id="manual-url" placeholder="Inserisci l'URL dell'articolo se disponibile...">
+            </div>
+            
+            <div class="field-container">
+                <label class="field-label" for="manual-content">Contenuto dell'Articolo:</label>
+                <textarea id="manual-content" placeholder="Inserisci il contenuto dell'articolo..." required></textarea>
+            </div>
+            
+            <button id="manual-save-button">Salva Articolo</button>
+        </div>
+    </div>
+    
+    <div id="status-message"></div>
+    
+    <div id="extraction-results">
+        <div class="field-container">
+            <label class="field-label" for="title-field">Titolo:</label>
+            <input type="text" id="title-field">
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="author-field">Autore:</label>
+            <input type="text" id="author-field">
+            <div class="info-text">Può essere modificato se non rilevato correttamente</div>
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="url-field">Fonte URL:</label>
+            <input type="text" id="url-field">
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="source-name-field">Nome della Fonte:</label>
+            <input type="text" id="source-name-field" placeholder="es. La Repubblica, Il Corriere della Sera, ecc.">
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="content-field">Contenuto dell'Articolo:</label>
+            <textarea id="content-field"></textarea>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="save-article-btn">Salva Articolo</button>
+            <button id="cancel-extraction-btn">Annulla</button>
+        </div>
+    </div>
+    
+    <div id="saved-articles-container">
+        <h2>Articoli Salvati</h2>
+        <p>Da qui puoi gestire gli articoli salvati e generare la rassegna stampa.</p>
+        
+        <div class="action-buttons">
+            <button id="generate-press-review-btn">Genera Rassegna Stampa</button>
+            <button id="export-data-btn">Esporta Dati</button>
+            <button id="import-data-btn">Importa Dati</button>
+            <button id="reset-data-btn">Elimina Tutti</button>
+        </div>
+        
+        <table class="saved-articles-table" id="saved-articles-table">
+            <thead>
+                <tr>
+                    <th>Titolo</th>
+                    <th>Fonte</th>
+                    <th>Autore</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="saved-articles-body">
+                <!-- Gli articoli salvati verranno inseriti qui dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Container per le rassegne stampa salvate -->
+    <div id="saved-reviews-container">
+        <h2>Rassegne Stampa Salvate</h2>
+        <p>Qui puoi visualizzare, scaricare o eliminare le rassegne stampa che hai generato.</p>
+        
+        <table class="saved-reviews-table" id="saved-reviews-table">
+            <thead>
+                <tr>
+                    <th>Titolo</th>
+                    <th>Data</th>
+                    <th>N° Articoli</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="saved-reviews-body">
+                <!-- Le rassegne salvate verranno inserite qui dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Modal per la rassegna stampa -->
+    <div id="press-review-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" id="close-press-review">&times;</span>
+                <h2>Anteprima Rassegna Stampa</h2>
+            </div>
+            <div id="press-review-content">
+                <!-- Il contenuto della rassegna stampa verrà inserito qui dinamicamente -->
+            </div>
+            <div class="modal-buttons">
+                <button id="print-press-review-btn">Stampa PDF</button>
+                <button id="save-press-review-btn">Salva Rassegna</button>
+                <button id="close-press-review-btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal per visualizzare le rassegne salvate -->
+    <div id="view-review-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" id="close-view-review">&times;</span>
+                <h2>Visualizza Rassegna Stampa</h2>
+            </div>
+            <div id="view-review-content">
+                <!-- Il contenuto della rassegna salvata verrà inserito qui dinamicamente -->
+            </div>
+            <div class="modal-buttons">
+                <button id="print-saved-review-btn">Stampa PDF</button>
+                <button id="close-view-review-btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal per import/export -->
+    <div id="import-export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" id="close-import-export">&times;</span>
+                <h2 id="import-export-title">Esporta Dati</h2>
+            </div>
+            <p id="import-export-description">Copia i dati sottostanti o salvali in un file CSV per backup.</p>
+            <textarea id="import-export-textarea"></textarea>
+            <div class="modal-buttons">
+                <button id="copy-export-btn">Copia negli Appunti</button>
+                <button id="confirm-import-btn">Importa</button>
+                <button id="download-csv-btn">Scarica CSV</button>
+                <button id="close-import-export-btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementi DOM
+            const urlInput = document.getElementById('url-input');
+            const extractButton = document.getElementById('extract-button');
+            const extractionResults = document.getElementById('extraction-results');
+            const statusMessage = document.getElementById('status-message');
+            const titleField = document.getElementById('title-field');
+            const authorField = document.getElementById('author-field');
+            const urlField = document.getElementById('url-field');
+            const sourceNameField = document.getElementById('source-name-field');
+            const contentField = document.getElementById('content-field');
+            const saveArticleBtn = document.getElementById('save-article-btn');
+            const cancelExtractionBtn = document.getElementById('cancel-extraction-btn');
+            const savedArticlesContainer = document.getElementById('saved-articles-container');
+            const savedArticlesBody = document.getElementById('saved-articles-body');
+            const generatePressReviewBtn = document.getElementById('generate-press-review-btn');
+            const exportDataBtn = document.getElementById('export-data-btn');
+            const importDataBtn = document.getElementById('import-data-btn');
+            const resetDataBtn = document.getElementById('reset-data-btn');
+            
+            // Elementi per l'inserimento manuale
+            const manualTitle = document.getElementById('manual-title');
+            const manualAuthor = document.getElementById('manual-author');
+            const manualSource = document.getElementById('manual-source');
+            const manualUrl = document.getElementById('manual-url');
+            const manualContent = document.getElementById('manual-content');
+            const manualSaveButton = document.getElementById('manual-save-button');
+            
+            // Modal per la rassegna stampa
+            const pressReviewModal = document.getElementById('press-review-modal');
+            const closePressReview = document.getElementById('close-press-review');
+            const pressReviewContent = document.getElementById('press-review-content');
+            const printPressReviewBtn = document.getElementById('print-press-review-btn');
+            const savePressReviewBtn = document.getElementById('save-press-review-btn');
+            const closePressReviewBtn = document.getElementById('close-press-review-btn');
+            
+            // Modal per import/export
+            const importExportModal = document.getElementById('import-export-modal');
+            const closeImportExport = document.getElementById('close-import-export');
+            const importExportTitle = document.getElementById('import-export-title');
+            const importExportDescription = document.getElementById('import-export-description');
+            const importExportTextarea = document.getElementById('import-export-textarea');
+            const copyExportBtn = document.getElementById('copy-export-btn');
+            const confirmImportBtn = document.getElementById('confirm-import-btn');
+            const downloadCsvBtn = document.getElementById('download-csv-btn');
+            const closeImportExportBtn = document.getElementById('close-import-export-btn');
+            
+            // Array per memorizzare gli articoli
+            let savedArticles = [];
+            // Array per memorizzare le rassegne stampa
+            let savedPressReviews = [];
+            // Oggetto per l'articolo corrente in fase di modifica
+            let currentEditArticle = null;
+            
+            // Carica gli articoli salvati dal localStorage
+            loadSavedData();
+            
+            // Event listener per il cambio di tab
+            window.openTab = function(evt, tabName) {
+                // Nascondi tutti i contenuti delle tab
+                const tabcontents = document.getElementsByClassName("tab-content");
+                for (let i = 0; i < tabcontents.length; i++) {
+                    tabcontents[i].style.display = "none";
+                }
+                
+                // Rimuovi la classe active da tutti i pulsanti
+                const tablinks = document.getElementsByClassName("tab-button");
+                for (let i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                
+                // Mostra la tab corrente e aggiungi la classe active al pulsante
+                document.getElementById(tabName).style.display = "block";
+                evt.currentTarget.className += " active";
+            };
+            
+            // Event listener per l'estrazione dell'articolo
+            extractButton.addEventListener('click', function() {
+                const url = urlInput.value.trim();
+                
+                if (!url) {
+                    showStatus('error', 'Per favore, inserisci un URL valido.');
+                    return;
+                }
+                
+                // Nascondi i risultati precedenti e mostra lo stato di caricamento
+                extractionResults.style.display = 'none';
+                showStatus('loading', 'Estrazione in corso...');
+                
+                // Utilizziamo un proxy CORS per aggirare le restrizioni di sicurezza
+                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+                
+                fetch(proxyUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Errore durante il recupero della pagina web');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Crea un elemento DOM temporaneo per analizzare l'HTML
+                        const tempEl = document.createElement('div');
+                        tempEl.innerHTML = data.contents;
+                        
+                        // Estrai le informazioni dell'articolo
+                        const articleInfo = extractArticleInfo(tempEl, url);
+                        
+                        // Popola i campi
+                        titleField.value = articleInfo.title;
+                        authorField.value = articleInfo.author;
+                        urlField.value = url;
+                        
+                        // Tenta di estrarre il nome della fonte dall'URL
+                        try {
+                            const hostname = new URL(url).hostname;
+                            const domainParts = hostname.split('.');
+                            if (domainParts.length >= 2) {
+                                const domain = domainParts[domainParts.length - 2];
+                                // Capitalizza il nome del dominio e rimuovi eventuali trattini
+                                sourceNameField.value = domain.charAt(0).toUpperCase() + 
+                                                     domain.slice(1).replace(/-/g, ' ');
+                            }
+                        } catch (e) {
+                            sourceNameField.value = '';
+                        }
+                        
+                        contentField.value = articleInfo.rawContent;
+                        
+                        // Resetta eventuali modifiche in corso
+                        currentEditArticle = null;
+                        
+                        // Mostra i risultati e nascondi lo stato di caricamento
+                        extractionResults.style.display = 'block';
+                        showStatus('success', 'Estrazione completata! Modifica i campi se necessario e salva l\'articolo.');
+                    })
+                    .catch(error => {
+                        showStatus('error', `Errore: ${error.message}`);
+                    });
+            });
+            
+            // Event listener per salvare l'articolo da inserimento manuale
+            manualSaveButton.addEventListener('click', function() {
+                const title = manualTitle.value.trim();
+                const author = manualAuthor.value.trim();
+                const sourceName = manualSource.value.trim();
+                const url = manualUrl.value.trim();
+                const content = manualContent.value.trim();
+                
+                if (!title) {
+                    showStatus('error', 'Il titolo è obbligatorio.');
+                    return;
+                }
+                
+                if (!content) {
+                    showStatus('error', 'Il contenuto dell\'articolo è obbligatorio.');
+                    return;
+                }
+                
+                // Crea un nuovo articolo
+                const newArticle = {
+                    id: generateUniqueId(),
+                    title,
+                    author,
+                    url,
+                    sourceName,
+                    content,
+                    createdDate: new Date().toISOString(),
+                    modifiedDate: new Date().toISOString()
+                };
+                
+                savedArticles.push(newArticle);
+                
+                // Salva gli articoli nel localStorage
+                saveArticlesToLocalStorage();
+                
+                // Aggiorna la tabella degli articoli
+                updateSavedArticlesTable();
+                
+                // Mostra il container degli articoli salvati
+                savedArticlesContainer.style.display = 'block';
+                
+                // Resetta i campi
+                manualTitle.value = '';
+                manualAuthor.value = '';
+                manualSource.value = '';
+                manualUrl.value = '';
+                manualContent.value = '';
+                
+                showStatus('success', 'Articolo salvato con successo!');
+            });
+            
+            // Event listener per salvare l'articolo
+            saveArticleBtn.addEventListener('click', function() {
+                const title = titleField.value.trim();
+                const author = authorField.value.trim();
+                const url = urlField.value.trim();
+                const sourceName = sourceNameField.value.trim();
+                const content = contentField.value.trim();
+                
+                if (!title) {
+                    showStatus('error', 'Il titolo è obbligatorio.');
+                    return;
+                }
+                
+                if (!content) {
+                    showStatus('error', 'Il contenuto dell\'articolo è obbligatorio.');
+                    return;
+                }
+                
+                // Se stiamo modificando un articolo esistente
+                if (currentEditArticle) {
+                    const index = savedArticles.findIndex(article => article.id === currentEditArticle.id);
+                    if (index !== -1) {
+                        savedArticles[index] = {
+                            ...savedArticles[index],
+                            title,
+                            author,
+                            url,
+                            sourceName,
+                            content,
+                            modifiedDate: new Date().toISOString()
+                        };
+                        showStatus('success', 'Articolo aggiornato con successo!');
+                    }
+                } else {
+                    // Crea un nuovo articolo
+                    const newArticle = {
+                        id: generateUniqueId(),
+                        title,
+                        author,
+                        url,
+                        sourceName,
+                        content,
+                        createdDate: new Date().toISOString(),
+                        modifiedDate: new Date().toISOString()
+                    };
+                    
+                    savedArticles.push(newArticle);
+                    showStatus('success', 'Articolo salvato con successo!');
+                }
