@@ -5,177 +5,241 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema di Rassegna Stampa</title>
     <style>
+        :root {
+            --primary-color: #5A6AB1;
+            --primary-light: #7B89D9;
+            --primary-dark: #4A5696;
+            --secondary-color: #F6F8FC;
+            --text-color: #333;
+            --light-text: #666;
+            --border-color: #E0E4E8;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --error-color: #f44336;
+            --bg-color: #F6F8FC;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
+        
         h1, h2, h3 {
-            color: #333;
+            color: var(--primary-dark);
         }
+        
         h1 {
             text-align: center;
             margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
         }
+        
         .form-container {
             margin-bottom: 20px;
+            display: flex;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
         input[type="url"], input[type="text"] {
-            width: 70%;
-            padding: 10px;
+            flex: 1;
+            padding: 12px;
             margin-right: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
+            font-size: 16px;
         }
+        
+        input[type="url"]:focus, input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(90, 106, 177, 0.2);
+        }
+        
         button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             margin-right: 5px;
+            font-size: 16px;
+            transition: all 0.2s ease;
         }
+        
         button:hover {
-            background-color: #45a049;
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
+        
+        .section-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
         #extraction-results {
             display: none;
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
         }
+        
         .field-container {
             margin-bottom: 20px;
         }
+        
         .field-label {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 500;
+            margin-bottom: 8px;
             display: block;
+            color: var(--primary-dark);
         }
+        
         input[type="text"], textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
+            font-size: 16px;
         }
+        
         textarea {
             min-height: 300px;
             resize: vertical;
+            line-height: 1.5;
         }
+        
         .error {
-            color: red;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #ffe6e6;
+            color: var(--error-color);
+            font-weight: 500;
+            padding: 12px;
+            background-color: rgba(244, 67, 54, 0.1);
             border-radius: 4px;
             margin: 10px 0;
         }
+        
         .success {
-            color: green;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #e6ffe6;
+            color: var(--success-color);
+            font-weight: 500;
+            padding: 12px;
+            background-color: rgba(76, 175, 80, 0.1);
             border-radius: 4px;
             margin: 10px 0;
         }
+        
         .loading {
             text-align: center;
             font-style: italic;
-            color: #666;
+            color: var(--light-text);
             padding: 10px;
         }
+        
         .info-text {
-            color: #666;
+            color: var(--light-text);
             font-style: italic;
             margin-top: 5px;
+            font-size: 14px;
         }
+        
         .action-buttons {
             display: flex;
             margin-top: 20px;
             gap: 10px;
             flex-wrap: wrap;
         }
+        
+        /* Colori dei pulsanti */
         #save-article-btn {
-            background-color: #2196F3;
+            background-color: var(--primary-color);
         }
+        
         #save-article-btn:hover {
-            background-color: #0b7dda;
+            background-color: var(--primary-dark);
         }
+        
+        #cancel-extraction-btn {
+            background-color: var(--light-text);
+        }
+        
+        #cancel-extraction-btn:hover {
+            background-color: #555;
+        }
+        
         #generate-press-review-btn {
-            background-color: #673AB7;
+            background-color: var(--primary-color);
         }
+        
         #generate-press-review-btn:hover {
-            background-color: #5E35B1;
+            background-color: var(--primary-dark);
         }
-        #export-data-btn {
-            background-color: #FF9800;
+        
+        #export-data-btn, #import-data-btn {
+            background-color: var(--primary-light);
         }
-        #export-data-btn:hover {
-            background-color: #F57C00;
+        
+        #export-data-btn:hover, #import-data-btn:hover {
+            background-color: var(--primary-color);
         }
+        
         #reset-data-btn {
-            background-color: #f44336;
+            background-color: var(--error-color);
         }
+        
         #reset-data-btn:hover {
             background-color: #d32f2f;
         }
         
-        /* Stili per la tabella degli articoli salvati */
-        #saved-articles-container {
+        /* Stili per i contenitori */
+        #saved-articles-container, #saved-reviews-container {
             margin-top: 30px;
             display: none;
         }
-        .saved-articles-table {
+        
+        .data-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            background-color: white;
         }
-        .saved-articles-table th, .saved-articles-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        
+        .data-table th, .data-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
             text-align: left;
         }
-        .saved-articles-table th {
-            background-color: #f2f2f2;
+        
+        .data-table th {
+            background-color: var(--secondary-color);
+            font-weight: 500;
+            color: var(--primary-dark);
         }
-        .saved-articles-table tr:nth-child(even) {
-            background-color: #f9f9f9;
+        
+        .data-table tr:nth-child(even) {
+            background-color: rgba(246, 248, 252, 0.5);
         }
-        .saved-articles-table tr:hover {
-            background-color: #f5f5f5;
+        
+        .data-table tr:hover {
+            background-color: rgba(90, 106, 177, 0.05);
         }
+        
         .action-cell {
             white-space: nowrap;
         }
         
-        /* Stili per la lista delle rassegne salvate */
-        #saved-reviews-container {
-            margin-top: 30px;
-            display: none;
-        }
-        .saved-reviews-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .saved-reviews-table th, .saved-reviews-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .saved-reviews-table th {
-            background-color: #f2f2f2;
-        }
-        .saved-reviews-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .saved-reviews-table tr:hover {
-            background-color: #f5f5f5;
+        .action-cell button {
+            padding: 8px 12px;
+            font-size: 14px;
+            margin-right: 5px;
         }
         
         /* Stili per il modal della rassegna stampa */
@@ -187,27 +251,31 @@
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
+            overflow: hidden;
             background-color: rgba(0,0,0,0.4);
         }
+        
         .modal-content {
             background-color: #fefefe;
             margin: 2% auto;
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
+            border: 1px solid #ddd;
+            width: 90%;
             max-width: 900px;
-            max-height: 90vh;
-            overflow-y: auto;
             position: relative;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
+        
         .close-modal {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
+            line-height: 0.8;
         }
+        
         .close-modal:hover {
             color: black;
         }
@@ -217,125 +285,132 @@
             body * {
                 visibility: hidden;
             }
+            body {
+                background-color: white !important;
+            }
             #press-review-modal, #press-review-modal * {
                 visibility: visible;
             }
-            #view-review-modal, #view-review-modal * {
-                visibility: visible;
-            }
-            .modal-content {
+            #press-review-modal {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
-                height: auto;
                 overflow: visible;
                 background-color: white;
-                box-shadow: none;
-                border: none;
             }
-            #press-review-content, #view-review-content {
+            #press-review-content {
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                overflow: visible !important;
             }
             .modal-header, .modal-buttons {
                 display: none !important;
             }
-            html, body {
+            .press-review-articles {
                 overflow: visible !important;
                 height: auto !important;
             }
-            ::-webkit-scrollbar {
-                display: none !important;
+            .modal-content {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
         }
         
         #press-review-content {
             background-color: white;
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Georgia', 'Times New Roman', Times, serif;
             padding: 20px;
             margin-top: 20px;
+            overflow: visible;
         }
+        
         .press-review-header {
             text-align: center;
             border-bottom: 2px solid black;
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
+        
         .press-review-title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
-            margin-bottom: 5px;
-            font-family: 'Times New Roman', Times, serif;
+            margin-bottom: 8px;
         }
+        
         .press-review-date {
-            font-size: 16px;
+            font-size: 18px;
             margin-bottom: 10px;
-            font-family: 'Times New Roman', Times, serif;
         }
+        
         .press-review-articles {
             column-count: 2;
-            column-gap: 20px;
+            column-gap: 40px;
+            column-rule: 1px solid #eee;
             text-align: justify;
-            hyphens: auto;
+            overflow: visible;
         }
+        
         .press-review-article {
             break-inside: avoid;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            overflow: visible;
         }
+        
         .article-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 5px;
-            font-family: 'Times New Roman', Times, serif;
+            margin-bottom: 8px;
+            line-height: 1.3;
         }
+        
         .article-source {
             font-style: italic;
             margin-bottom: 10px;
-            font-size: 14px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-        .article-author {
-            font-weight: bold;
-            font-size: 14px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-        .article-content {
-            font-size: 14px;
-            line-height: 1.4;
-            text-indent: 20px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-        .article-content p:first-of-type:first-letter {
-            font-size: 22px;
-            font-weight: bold;
-            float: left;
-            margin-right: 4px;
-            line-height: 1;
-        }
-        .article-content p {
-            word-spacing: normal !important;
-            letter-spacing: normal !important;
+            font-size: 16px;
         }
         
-        /* Rimuove le barre di scorrimento nella stampa */
-        @media print {
-            html, body {
-                overflow: visible !important;
-            }
-            ::-webkit-scrollbar {
-                display: none !important;
-            }
-            .modal-content {
-                overflow: visible !important;
-                max-height: none !important;
-            }
+        .article-author {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .article-content {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .article-content p {
+            text-indent: 20px;
+            margin-bottom: 10px;
+            hyphens: auto;
+        }
+        
+        .article-content p:first-child {
+            text-indent: 0;
+        }
+        
+        .dropcap {
+            float: left;
+            font-size: 60px;
+            line-height: 1;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-top: -2px;
+            color: var(--primary-dark);
         }
         
         .modal-buttons {
             margin-top: 20px;
             text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
         }
         
         /* Stili per il modal di importazione/esportazione */
@@ -343,6 +418,87 @@
             width: 100%;
             height: 300px;
             margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            padding: 10px;
+        }
+        
+        /* Stili per le etichette */
+        .section-label {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-label::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            margin-left: 15px;
+            background-color: var(--border-color);
+        }
+        
+        /* Stili per le tabs */
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-right: 5px;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-color: var(--border-color);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Tooltip per i pulsanti */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
@@ -356,7 +512,9 @@
     
     <div id="status-message"></div>
     
-    <div id="extraction-results">
+    <div id="extraction-results" class="section-container">
+        <div class="section-label">Estrazione Articolo</div>
+        
         <div class="field-container">
             <label class="field-label" for="title-field">Titolo:</label>
             <input type="text" id="title-field">
@@ -389,18 +547,35 @@
         </div>
     </div>
     
-    <div id="saved-articles-container">
-        <h2>Articoli Salvati</h2>
+    <div class="tab-container">
+        <div class="tab active" data-tab="articles">Articoli</div>
+        <div class="tab" data-tab="reviews">Rassegne Salvate</div>
+    </div>
+    
+    <div id="saved-articles-container" class="tab-content active section-container">
+        <div class="section-label">Articoli Salvati</div>
         <p>Da qui puoi gestire gli articoli salvati e generare la rassegna stampa.</p>
         
         <div class="action-buttons">
-            <button id="generate-press-review-btn">Genera Rassegna Stampa</button>
-            <button id="export-data-btn">Esporta Dati</button>
-            <button id="import-data-btn">Importa Dati</button>
-            <button id="reset-data-btn">Elimina Tutti</button>
+            <button id="generate-press-review-btn" class="tooltip">
+                Genera Rassegna Stampa
+                <span class="tooltiptext">Crea una nuova rassegna con gli articoli selezionati</span>
+            </button>
+            <button id="export-data-btn" class="tooltip">
+                Esporta Dati
+                <span class="tooltiptext">Esporta gli articoli in formato CSV</span>
+            </button>
+            <button id="import-data-btn" class="tooltip">
+                Importa Dati
+                <span class="tooltiptext">Importa articoli da formato CSV</span>
+            </button>
+            <button id="reset-data-btn" class="tooltip">
+                Elimina Tutti
+                <span class="tooltiptext">Rimuovi tutti gli articoli salvati</span>
+            </button>
         </div>
         
-        <table class="saved-articles-table" id="saved-articles-table">
+        <table class="data-table" id="saved-articles-table">
             <thead>
                 <tr>
                     <th>Titolo</th>
@@ -415,17 +590,16 @@
         </table>
     </div>
     
-    <!-- Container per le rassegne stampa salvate -->
-    <div id="saved-reviews-container">
-        <h2>Rassegne Stampa Salvate</h2>
-        <p>Qui puoi visualizzare, scaricare o eliminare le rassegne stampa che hai generato.</p>
+    <div id="saved-reviews-container" class="tab-content section-container">
+        <div class="section-label">Rassegne Stampa Salvate</div>
+        <p>Qui puoi visualizzare e gestire le rassegne stampa che hai salvato.</p>
         
-        <table class="saved-reviews-table" id="saved-reviews-table">
+        <table class="data-table" id="saved-reviews-table">
             <thead>
                 <tr>
                     <th>Titolo</th>
                     <th>Data</th>
-                    <th>N° Articoli</th>
+                    <th>Articoli</th>
                     <th>Azioni</th>
                 </tr>
             </thead>
@@ -447,27 +621,8 @@
             </div>
             <div class="modal-buttons">
                 <button id="print-press-review-btn">Stampa PDF</button>
-                <button id="generate-epub-btn">Genera EPUB</button>
                 <button id="save-press-review-btn">Salva Rassegna</button>
                 <button id="close-press-review-btn">Chiudi</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal per visualizzare le rassegne salvate -->
-    <div id="view-review-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close-modal" id="close-view-review">&times;</span>
-                <h2>Visualizza Rassegna Stampa</h2>
-            </div>
-            <div id="view-review-content">
-                <!-- Il contenuto della rassegna salvata verrà inserito qui dinamicamente -->
-            </div>
-            <div class="modal-buttons">
-                <button id="print-saved-review-btn">Stampa PDF</button>
-                <button id="generate-saved-epub-btn">Genera EPUB</button>
-                <button id="close-view-review-btn">Chiudi</button>
             </div>
         </div>
     </div>
@@ -490,9 +645,6 @@
         </div>
     </div>
     
-    <!-- Includi JSZip per la creazione dell'EPUB -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Elementi DOM
@@ -508,28 +660,25 @@
             const saveArticleBtn = document.getElementById('save-article-btn');
             const cancelExtractionBtn = document.getElementById('cancel-extraction-btn');
             const savedArticlesContainer = document.getElementById('saved-articles-container');
+            const savedReviewsContainer = document.getElementById('saved-reviews-container');
             const savedArticlesBody = document.getElementById('saved-articles-body');
+            const savedReviewsBody = document.getElementById('saved-reviews-body');
             const generatePressReviewBtn = document.getElementById('generate-press-review-btn');
             const exportDataBtn = document.getElementById('export-data-btn');
             const importDataBtn = document.getElementById('import-data-btn');
             const resetDataBtn = document.getElementById('reset-data-btn');
+            
+            // Tabs
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
             
             // Modal per la rassegna stampa
             const pressReviewModal = document.getElementById('press-review-modal');
             const closePressReview = document.getElementById('close-press-review');
             const pressReviewContent = document.getElementById('press-review-content');
             const printPressReviewBtn = document.getElementById('print-press-review-btn');
-            const generateEpubBtn = document.getElementById('generate-epub-btn');
             const savePressReviewBtn = document.getElementById('save-press-review-btn');
             const closePressReviewBtn = document.getElementById('close-press-review-btn');
-            
-            // Modal per visualizzare le rassegne salvate
-            const viewReviewModal = document.getElementById('view-review-modal');
-            const closeViewReview = document.getElementById('close-view-review');
-            const viewReviewContent = document.getElementById('view-review-content');
-            const printSavedReviewBtn = document.getElementById('print-saved-review-btn');
-            const generateSavedEpubBtn = document.getElementById('generate-saved-epub-btn');
-            const closeViewReviewBtn = document.getElementById('close-view-review-btn');
             
             // Modal per import/export
             const importExportModal = document.getElementById('import-export-modal');
@@ -548,6 +697,27 @@
             let savedPressReviews = [];
             // Oggetto per l'articolo corrente in fase di modifica
             let currentEditArticle = null;
+            // La rassegna attualmente visualizzata
+            let currentReview = null;
+            
+            // Gestione delle tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    
+                    // Attiva la tab corrente
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Mostra il contenuto corrispondente
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id.includes(tabName)) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
             
             // Carica gli articoli salvati dal localStorage
             loadSavedData();
@@ -563,128 +733,6 @@
                 
                 // Nascondi i risultati precedenti e mostra lo stato di caricamento
                 extractionResults.style.display = 'none';
-                showStatus('loading', 'Estrazione in corso...');
-                
-                // Utilizziamo un proxy CORS per aggirare le restrizioni di sicurezza
-                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
-                
-                fetch(proxyUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Errore durante il recupero della pagina web');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        // Crea un elemento DOM temporaneo per analizzare l'HTML
-                        const tempEl = document.createElement('div');
-                        tempEl.innerHTML = data.contents;
-                        
-                        // Estrai le informazioni dell'articolo
-                        const articleInfo = extractArticleInfo(tempEl, url);
-                        
-                        // Popola i campi
-                        titleField.value = articleInfo.title;
-                        authorField.value = articleInfo.author;
-                        urlField.value = url;
-                        
-                        // Tenta di estrarre il nome della fonte dall'URL
-                        try {
-                            const hostname = new URL(url).hostname;
-                            const domainParts = hostname.split('.');
-                            if (domainParts.length >= 2) {
-                                const domain = domainParts[domainParts.length - 2];
-                                // Capitalizza il nome del dominio e rimuovi eventuali trattini
-                                sourceNameField.value = domain.charAt(0).toUpperCase() + 
-                                                     domain.slice(1).replace(/-/g, ' ');
-                            }
-                        } catch (e) {
-                            sourceNameField.value = '';
-                        }
-                        
-                        contentField.value = articleInfo.rawContent;
-                        
-                        // Resetta eventuali modifiche in corso
-                        currentEditArticle = null;
-                        
-                        // Mostra i risultati e nascondi lo stato di caricamento
-                        extractionResults.style.display = 'block';
-                        showStatus('success', 'Estrazione completata! Modifica i campi se necessario e salva l\'articolo.');
-                    })
-                    .catch(error => {
-                        showStatus('error', `Errore: ${error.message}`);
-                    });
-            });
-            
-            // Event listener per salvare l'articolo
-            saveArticleBtn.addEventListener('click', function() {
-                const title = titleField.value.trim();
-                const author = authorField.value.trim();
-                const url = urlField.value.trim();
-                const sourceName = sourceNameField.value.trim();
-                const content = contentField.value.trim();
-                
-                if (!title) {
-                    showStatus('error', 'Il titolo è obbligatorio.');
-                    return;
-                }
-                
-                if (!content) {
-                    showStatus('error', 'Il contenuto dell\'articolo è obbligatorio.');
-                    return;
-                }
-                
-                // Se stiamo modificando un articolo esistente
-                if (currentEditArticle) {
-                    const index = savedArticles.findIndex(article => article.id === currentEditArticle.id);
-                    if (index !== -1) {
-                        savedArticles[index] = {
-                            ...savedArticles[index],
-                            title,
-                            author,
-                            url,
-                            sourceName,
-                            content,
-                            modifiedDate: new Date().toISOString()
-                        };
-                        showStatus('success', 'Articolo aggiornato con successo!');
-                    }
-                } else {
-                    // Crea un nuovo articolo
-                    const newArticle = {
-                        id: generateUniqueId(),
-                        title,
-                        author,
-                        url,
-                        sourceName,
-                        content,
-                        createdDate: new Date().toISOString(),
-                        modifiedDate: new Date().toISOString()
-                    };
-                    
-                    savedArticles.push(newArticle);
-                    showStatus('success', 'Articolo salvato con successo!');
-                }
-                
-                // Salva gli articoli nel localStorage
-                saveArticlesToLocalStorage();
-                
-                // Aggiorna la tabella degli articoli
-                updateSavedArticlesTable();
-                
-                // Mostra il container degli articoli salvati
-                savedArticlesContainer.style.display = 'block';
-                
-                // Nascondi i risultati dell'estrazione
-                extractionResults.style.display = 'none';
-                
-                // Resetta i campi
-                resetExtractionFields();
-            });
-            
-            // Event listener per annullare l'estrazione
-            cancelExtractionBtn.addEventListener('click', function() {
-                extractionResults.style.display = 'none';
                 statusMessage.textContent = '';
                 currentEditArticle = null;
                 resetExtractionFields();
@@ -699,6 +747,7 @@
                 
                 // Genera la rassegna stampa
                 generatePressReview();
+                currentReview = null; // Indica che stiamo creando una nuova rassegna
                 
                 // Mostra il modal
                 pressReviewModal.style.display = 'block';
@@ -726,112 +775,27 @@
                 }
             });
             
-            // Event listener per stampare la rassegna in PDF
+            // Event listener per la stampa della rassegna come PDF
             printPressReviewBtn.addEventListener('click', function() {
-                // Rimuove temporaneamente i bordi del modal per la stampa
-                const modalContent = document.querySelector('.modal-content');
-                const originalBorder = modalContent.style.border;
-                const originalOverflow = modalContent.style.overflow;
+                // Assicuriamoci che il contenuto della rassegna sia ottimizzato prima di stampare
+                const bodyElement = document.body;
+                bodyElement.classList.add('printing');
                 
-                modalContent.style.border = 'none';
-                modalContent.style.overflow = 'visible';
-                document.documentElement.style.overflow = 'visible';
-                document.body.style.overflow = 'visible';
-                
-                // Prendi una copia del contenuto da stampare
-                const content = pressReviewContent.innerHTML;
-                
-                // Crea un iframe nascosto per la stampa
-                const printIframe = document.createElement('iframe');
-                printIframe.style.position = 'fixed';
-                printIframe.style.right = '0';
-                printIframe.style.bottom = '0';
-                printIframe.style.width = '0';
-                printIframe.style.height = '0';
-                printIframe.style.border = '0';
-                
-                document.body.appendChild(printIframe);
-                
-                // Imposta il contenuto nell'iframe
-                const printDocument = printIframe.contentWindow.document;
-                printDocument.open();
-                printDocument.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>${pressReviewContent.querySelector('.press-review-title').textContent}</title>
-                        <style>
-                            @media print {
-                                @page {
-                                    size: A4;
-                                    margin: 1cm;
-                                }
-                            }
-                            body {
-                                font-family: 'Times New Roman', Times, serif;
-                                line-height: 1.4;
-                                margin: 0;
-                                padding: 0;
-                            }
-                            .press-review-header {
-                                text-align: center;
-                                border-bottom: 2px solid black;
-                                padding-bottom: 10px;
-                                margin-bottom: 20px;
-                            }
-                            .press-review-title {
-                                font-size: 28px;
-                                font-weight: bold;
-                                font-size: 14px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-content {
-                                font-size: 14px;
-                                line-height: 1.4;
-                                text-indent: 20px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-content p:first-of-type:first-letter {
-                                font-size: 22px;
-                                font-weight: bold;
-                                float: left;
-                                margin-right: 4px;
-                                line-height: 1;
-                            }
-                            .article-content p {
-                                word-spacing: normal !important;
-                                letter-spacing: normal !important;
-                            }
-                        </style>
-                    </head>
-                    <body>${content}</body>
-                    </html>
-                `);
-                printDocument.close();
-                
-                // Stampa l'iframe
                 setTimeout(() => {
-                    printIframe.contentWindow.focus();
-                    printIframe.contentWindow.print();
-                    
-                    // Rimuovi l'iframe dopo la stampa
-                    setTimeout(() => {
-                        document.body.removeChild(printIframe);
-                        
-                        // Ripristina gli stili originali
-                        modalContent.style.border = originalBorder;
-                        modalContent.style.overflow = originalOverflow;
-                    }, 1000);
-                }, 500);
-            });
-            
-            // Event listener per generare EPUB
-            document.getElementById('generate-epub-btn').addEventListener('click', function() {
-                generateEpub(savedArticles, pressReviewContent.querySelector('.press-review-title').textContent);
+                    window.print();
+                    bodyElement.classList.remove('printing');
+                }, 300);
             });
             
             // Event listener per salvare la rassegna
             savePressReviewBtn.addEventListener('click', function() {
+                // Se stiamo visualizzando una rassegna esistente
+                if (currentReview) {
+                    showStatus('info', 'Questa rassegna è già stata salvata.');
+                    pressReviewModal.style.display = 'none';
+                    return;
+                }
+                
                 // Salva la rassegna attuale
                 const currentDate = new Date();
                 const reviewId = generateUniqueId();
@@ -842,17 +806,19 @@
                     title: reviewTitle,
                     date: currentDate.toISOString(),
                     articles: savedArticles.map(article => article.id),
-                    htmlContent: pressReviewContent.innerHTML
+                    htmlContent: pressReviewContent.innerHTML,
+                    createdDate: currentDate.toISOString()
                 };
                 
                 savedPressReviews.push(reviewData);
                 saveReviewsToLocalStorage();
-                
-                // Aggiorna la visualizzazione delle rassegne salvate
-                updateSavedReviewsList();
+                updateSavedReviewsTable();
                 
                 showStatus('success', 'Rassegna stampa salvata con successo!');
                 pressReviewModal.style.display = 'none';
+                
+                // Passa alla tab delle rassegne
+                document.querySelector('.tab[data-tab="reviews"]').click();
             });
             
             // Event listeners per chiudere i modal
@@ -870,146 +836,6 @@
             
             closeImportExportBtn.addEventListener('click', function() {
                 importExportModal.style.display = 'none';
-            });
-            
-            // Chiusura del modal di visualizzazione rassegna
-            closeViewReview.addEventListener('click', function() {
-                viewReviewModal.style.display = 'none';
-            });
-            
-            closeViewReviewBtn.addEventListener('click', function() {
-                viewReviewModal.style.display = 'none';
-            });
-            
-            // Stampa della rassegna salvata
-            printSavedReviewBtn.addEventListener('click', function() {
-                // Rimuove temporaneamente i bordi del modal per la stampa
-                const modalContent = viewReviewModal.querySelector('.modal-content');
-                const originalBorder = modalContent.style.border;
-                const originalOverflow = modalContent.style.overflow;
-                
-                modalContent.style.border = 'none';
-                modalContent.style.overflow = 'visible';
-                document.documentElement.style.overflow = 'visible';
-                document.body.style.overflow = 'visible';
-                
-                // Prendi una copia del contenuto da stampare
-                const content = viewReviewContent.innerHTML;
-                
-                // Crea un iframe nascosto per la stampa
-                const printIframe = document.createElement('iframe');
-                printIframe.style.position = 'fixed';
-                printIframe.style.right = '0';
-                printIframe.style.bottom = '0';
-                printIframe.style.width = '0';
-                printIframe.style.height = '0';
-                printIframe.style.border = '0';
-                
-                document.body.appendChild(printIframe);
-                
-                // Imposta il contenuto nell'iframe
-                const printDocument = printIframe.contentWindow.document;
-                printDocument.open();
-                printDocument.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>${viewReviewContent.querySelector('.press-review-title').textContent}</title>
-                        <style>
-                            @media print {
-                                @page {
-                                    size: A4;
-                                    margin: 1cm;
-                                }
-                            }
-                            body {
-                                font-family: 'Times New Roman', Times, serif;
-                                line-height: 1.4;
-                                margin: 0;
-                                padding: 0;
-                            }
-                            .press-review-header {
-                                text-align: center;
-                                border-bottom: 2px solid black;
-                                padding-bottom: 10px;
-                                margin-bottom: 20px;
-                            }
-                            .press-review-title {
-                                font-size: 28px;
-                                font-weight: bold;
-                                margin-bottom: 5px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .press-review-date {
-                                font-size: 16px;
-                                margin-bottom: 10px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .press-review-articles {
-                                column-count: 2;
-                                column-gap: 20px;
-                                text-align: justify;
-                                hyphens: auto;
-                            }
-                            .press-review-article {
-                                break-inside: avoid;
-                                margin-bottom: 20px;
-                            }
-                            .article-title {
-                                font-size: 18px;
-                                font-weight: bold;
-                                margin-bottom: 5px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-source {
-                                font-style: italic;
-                                margin-bottom: 10px;
-                                font-size: 14px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-author {
-                                font-weight: bold;
-                                font-size: 14px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-content {
-                                font-size: 14px;
-                                line-height: 1.4;
-                                text-indent: 20px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-content p:first-of-type:first-letter {
-                                font-size: 22px;
-                                font-weight: bold;
-                                float: left;
-                                margin-right: 4px;
-                                line-height: 1;
-                            }
-                            .article-content p {
-                                word-spacing: normal !important;
-                                letter-spacing: normal !important;
-                            }
-                        </style>
-                    </head>
-                    <body>${content}</body>
-                    </html>
-                `);
-                printDocument.close();
-                
-                // Stampa l'iframe
-                setTimeout(() => {
-                    printIframe.contentWindow.focus();
-                    printIframe.contentWindow.print();
-                    
-                    // Rimuovi l'iframe dopo la stampa
-                    setTimeout(() => {
-                        document.body.removeChild(printIframe);
-                        
-                        // Ripristina gli stili originali
-                        modalContent.style.border = originalBorder;
-                        modalContent.style.overflow = originalOverflow;
-                    }, 1000);
-                }, 500);
             });
             
             // Event listener per copiare i dati esportati
@@ -1077,443 +903,7 @@
                 if (event.target === importExportModal) {
                     importExportModal.style.display = 'none';
                 }
-                if (event.target === viewReviewModal) {
-                    viewReviewModal.style.display = 'none';
-                }
             });
-            
-            // Genera EPUB dagli articoli
-            function generateEpub(articles, title) {
-                if (!articles || articles.length === 0) {
-                    showStatus('error', 'Nessun articolo disponibile per generare l\'EPUB.');
-                    return;
-                }
-                
-                try {
-                    // Costanti per la creazione del file EPUB
-                    const currentDate = new Date();
-                    const uuid = 'urn:uuid:' + generateUniqueId(); // UUID per l'EPUB
-                    const dateString = currentDate.toISOString().split('T')[0]; // Data in formato YYYY-MM-DD
-                    
-                    // Crea il container.xml
-                    const containerXml = `<?xml version="1.0" encoding="UTF-8"?>
-<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-    <rootfiles>
-        <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
-    </rootfiles>
-</container>`;
-                    
-                    // Crea il content.opf (metadati e manifesto)
-                    let contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0">
-    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-        <dc:title>${escapeXml(title)}</dc:title>
-        <dc:creator>Sistema di Rassegna Stampa</dc:creator>
-        <dc:language>it</dc:language>
-        <dc:identifier id="BookID">${uuid}</dc:identifier>
-        <dc:date>${dateString}</dc:date>
-        <dc:publisher>Sistema di Rassegna Stampa</dc:publisher>
-    </metadata>
-    <manifest>
-        <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
-        <item id="style" href="style.css" media-type="text/css"/>
-        <item id="titlepage" href="titlepage.xhtml" media-type="application/xhtml+xml"/>
-        <item id="toc" href="toc.xhtml" media-type="application/xhtml+xml"/>`;
-                    
-                    // Aggiungi ogni articolo al manifesto
-                    for (let i = 0; i < articles.length; i++) {
-                        contentOpf += `
-        <item id="article${i}" href="article${i}.xhtml" media-type="application/xhtml+xml"/>`;
-                    }
-                    
-                    // Aggiungi la spine (ordine dei documenti)
-                    contentOpf += `
-    </manifest>
-    <spine toc="ncx">
-        <itemref idref="titlepage"/>
-        <itemref idref="toc"/>`;
-                    
-                    for (let i = 0; i < articles.length; i++) {
-                        contentOpf += `
-        <itemref idref="article${i}"/>`;
-                    }
-                    
-                    contentOpf += `
-    </spine>
-    <guide>
-        <reference type="cover" title="Cover" href="titlepage.xhtml"/>
-        <reference type="toc" title="Indice" href="toc.xhtml"/>
-    </guide>
-</package>`;
-                    
-                    // Crea il toc.ncx (navigazione)
-                    let tocNcx = `<?xml version="1.0" encoding="UTF-8"?>
-<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
-    <head>
-        <meta name="dtb:uid" content="${uuid}"/>
-        <meta name="dtb:depth" content="1"/>
-        <meta name="dtb:totalPageCount" content="0"/>
-        <meta name="dtb:maxPageNumber" content="0"/>
-    </head>
-    <docTitle>
-        <text>${escapeXml(title)}</text>
-    </docTitle>
-    <navMap>
-        <navPoint id="navpoint-1" playOrder="1">
-            <navLabel>
-                <text>Copertina</text>
-            </navLabel>
-            <content src="titlepage.xhtml"/>
-        </navPoint>
-        <navPoint id="navpoint-2" playOrder="2">
-            <navLabel>
-                <text>Indice</text>
-            </navLabel>
-            <content src="toc.xhtml"/>
-        </navPoint>`;
-                    
-                    // Aggiungi ogni articolo alla navigazione
-                    for (let i = 0; i < articles.length; i++) {
-                        const playOrder = i + 3; // Inizia da 3 perché copertina e indice sono 1 e 2
-                        tocNcx += `
-        <navPoint id="navpoint-${playOrder}" playOrder="${playOrder}">
-            <navLabel>
-                <text>${escapeXml(articles[i].title)}</text>
-            </navLabel>
-            <content src="article${i}.xhtml"/>
-        </navPoint>`;
-                    }
-                    
-                    tocNcx += `
-    </navMap>
-</ncx>`;
-                    
-                    // Crea il foglio di stile
-                    const styleCss = `body { 
-    font-family: "Times New Roman", Times, serif; 
-    margin: 2em; 
-    line-height: 1.4;
-    text-align: justify;
-}
-h1 { 
-    font-size: 1.5em; 
-    margin: 1em 0 0.5em 0; 
-    text-align: center;
-}
-h2 {
-    font-size: 1.2em;
-    margin: 0.8em 0 0.4em 0;
-}
-.source { 
-    font-style: italic; 
-    margin: 0.5em 0; 
-    text-align: center;
-}
-.author { 
-    font-weight: bold; 
-    margin: 0.5em 0 1em 0; 
-    text-align: center;
-}
-p {
-    margin: 0.5em 0;
-    text-indent: 1.5em;
-}
-.title-page {
-    text-align: center;
-    margin-top: 30%;
-}
-.title-page h1 {
-    font-size: 2em;
-    margin-bottom: 1em;
-}
-.title-page .date {
-    margin-top: 2em;
-    font-style: italic;
-}
-.toc-entry {
-    margin: 0.5em 0 0.5em 1em;
-}`;
-                    
-                    // Crea la pagina del titolo
-                    const titlePage = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <meta charset="UTF-8" />
-    <title>${escapeXml(title)}</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-</head>
-<body>
-    <div class="title-page">
-        <h1>${escapeXml(title)}</h1>
-        <div class="date">${formatDate(currentDate)}</div>
-    </div>
-</body>
-</html>`;
-                    
-                    // Crea la pagina dell'indice
-                    let tocPage = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <meta charset="UTF-8" />
-    <title>Indice</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-</head>
-<body>
-    <h1>Indice</h1>
-    <nav epub:type="toc">
-        <ol>`;
-                    
-                    // Aggiungi ogni articolo all'indice
-                    for (let i = 0; i < articles.length; i++) {
-                        tocPage += `
-            <li class="toc-entry"><a href="article${i}.xhtml">${escapeXml(articles[i].title)}</a></li>`;
-                    }
-                    
-                    tocPage += `
-        </ol>
-    </nav>
-</body>
-</html>`;
-                    
-                    // Crea le pagine degli articoli
-                    const articlePages = [];
-                    for (let i = 0; i < articles.length; i++) {
-                        const article = articles[i];
-                        
-                        // Formatta il contenuto dell'articolo
-                        let formattedContent = article.content;
-                        if (!formattedContent.includes('<p>')) {
-                            formattedContent = article.content.split('\n\n')
-                                .map(p => p.trim())
-                                .filter(p => p.length > 0)
-                                .map(p => `<p>${p}</p>`)
-                                .join('\n');
-                        }
-                        
-                        let articlePage = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <meta charset="UTF-8" />
-    <title>${escapeXml(article.title)}</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-</head>
-<body>
-    <h1>${escapeXml(article.title)}</h1>`;
-                        
-                        if (article.sourceName) {
-                            articlePage += `
-    <div class="source">Fonte: ${escapeXml(article.sourceName)}</div>`;
-                        }
-                        
-                        if (article.author) {
-                            articlePage += `
-    <div class="author">${escapeXml(article.author)}</div>`;
-                        }
-                        
-                        articlePage += `
-    <div class="article-content">
-        ${formattedContent}
-    </div>
-</body>
-</html>`;
-                        
-                        articlePages.push(articlePage);
-                    }
-                    
-                    // Crea un oggetto JSZip per generare l'EPUB
-                    const zip = new JSZip();
-                    
-                    // Aggiungi il mimetype (deve essere il primo file nell'archivio, non compresso)
-                    zip.file("mimetype", "application/epub+zip", {compression: "STORE"});
-                    
-                    // Crea la cartella META-INF
-                    zip.folder("META-INF").file("container.xml", containerXml);
-                    
-                    // Crea la cartella OEBPS per il contenuto
-                    const oebps = zip.folder("OEBPS");
-                    oebps.file("content.opf", contentOpf);
-                    oebps.file("toc.ncx", tocNcx);
-                    oebps.file("style.css", styleCss);
-                    oebps.file("titlepage.xhtml", titlePage);
-                    oebps.file("toc.xhtml", tocPage);
-                    
-                    // Aggiungi ogni pagina di articolo
-                    for (let i = 0; i < articlePages.length; i++) {
-                        oebps.file(`article${i}.xhtml`, articlePages[i]);
-                    }
-                    
-                    // Genera il file EPUB
-                    zip.generateAsync({type: "blob"})
-                        .then(function(content) {
-                            // Crea un URL per il blob
-                            const url = URL.createObjectURL(content);
-                            
-                            // Crea un link per scaricare il file
-                            const link = document.createElement('a');
-                            link.href = url;
-                            
-                            // Formatta il titolo per il nome del file
-                            const safeTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                            link.download = `${safeTitle}.epub`;
-                            
-                            document.body.appendChild(link);
-                            link.click();
-                            
-                            // Pulizia
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(url);
-                            
-                            showStatus('success', 'EPUB generato con successo! Il download dovrebbe iniziare automaticamente.');
-                        })
-                        .catch(function(error) {
-                            showStatus('error', `Errore durante la generazione dell'EPUB: ${error.message}`);
-                        });
-                } catch (error) {
-                    showStatus('error', `Errore durante la generazione dell'EPUB: ${error.message}`);
-                }
-            }
-            
-            // Funzione per sfuggire i caratteri speciali in XML
-            function escapeXml(unsafe) {
-                if (typeof unsafe !== 'string') return '';
-                return unsafe.replace(/[<>&'"]/g, function (c) {
-                    switch (c) {
-                        case '<': return '&lt;';
-                        case '>': return '&gt;';
-                        case '&': return '&amp;';
-                        case '\'': return '&apos;';
-                        case '"': return '&quot;';
-                    }
-                });
-            }d;
-                                margin-bottom: 5px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .press-review-date {
-                                font-size: 16px;
-                                margin-bottom: 10px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .press-review-articles {
-                                column-count: 2;
-                                column-gap: 20px;
-                                text-align: justify;
-                                hyphens: auto;
-                            }
-                            .press-review-article {
-                                break-inside: avoid;
-                                margin-bottom: 20px;
-                            }
-                            .article-title {
-                                font-size: 18px;
-                                font-weight: bold;
-                                margin-bottom: 5px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-source {
-                                font-style: italic;
-                                margin-bottom: 10px;
-                                font-size: 14px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                            .article-author {
-                                font-weight: bold
-                                    margin-bottom: 5px;
-                                font-family: 'Times New Roman', Times, serif;
-                            }
-                  }
-                });
-// Funzione per aggiornare la lista delle rassegne salvate
-            function updateSavedReviewsList() {
-                const savedReviewsContainer = document.getElementById('saved-reviews-container');
-                const savedReviewsBody = document.getElementById('saved-reviews-body');
-                
-                // Mostra il container delle rassegne salvate se ci sono rassegne
-                if (savedPressReviews && savedPressReviews.length > 0) {
-                    savedReviewsContainer.style.display = 'block';
-                    
-                    // Pulisci la tabella
-                    savedReviewsBody.innerHTML = '';
-                    
-                    // Ordina le rassegne per data (più recenti prima)
-                    const sortedReviews = [...savedPressReviews].sort((a, b) => 
-                        new Date(b.date) - new Date(a.date)
-                    );
-                    
-                    // Aggiungi le righe per ogni rassegna
-                    sortedReviews.forEach(review => {
-                        const row = document.createElement('tr');
-                        
-                        const titleCell = document.createElement('td');
-                        titleCell.textContent = review.title;
-                        row.appendChild(titleCell);
-                        
-                        const dateCell = document.createElement('td');
-                        dateCell.textContent = new Date(review.date).toLocaleDateString('it-IT');
-                        row.appendChild(dateCell);
-                        
-                        const articlesCountCell = document.createElement('td');
-                        articlesCountCell.textContent = review.articles ? review.articles.length : 0;
-                        row.appendChild(articlesCountCell);
-                        
-                        const actionsCell = document.createElement('td');
-                        actionsCell.className = 'action-cell';
-                        
-                        // Pulsante Visualizza
-                        const viewBtn = document.createElement('button');
-                        viewBtn.textContent = 'Visualizza';
-                        viewBtn.style.backgroundColor = '#2196F3';
-                        viewBtn.addEventListener('click', () => viewReview(review.id));
-                        actionsCell.appendChild(viewBtn);
-                        
-                        // Pulsante Elimina
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Elimina';
-                        deleteBtn.style.backgroundColor = '#f44336';
-                        deleteBtn.addEventListener('click', () => deleteReview(review.id));
-                        actionsCell.appendChild(deleteBtn);
-                        
-                        row.appendChild(actionsCell);
-                        
-                        savedReviewsBody.appendChild(row);
-                    });
-                } else {
-                    savedReviewsContainer.style.display = 'none';
-                }
-            }
-            
-            // Funzione per visualizzare una rassegna salvata
-            function viewReview(reviewId) {
-                const review = savedPressReviews.find(r => r.id === reviewId);
-                if (!review) return;
-                
-                // Imposta il contenuto nel modal
-                viewReviewContent.innerHTML = review.htmlContent;
-                viewReviewContent.dataset.reviewId = reviewId;
-                
-                // Mostra il modal
-                viewReviewModal.style.display = 'block';
-            }
-            
-            // Funzione per eliminare una rassegna
-            function deleteReview(reviewId) {
-                if (confirm('Sei sicuro di voler eliminare questa rassegna stampa?')) {
-                    // Rimuovi la rassegna dall'array
-                    // Rimuovi la rassegna dall'array
-                    savedPressReviews = savedPressReviews.filter(r => r.id !== reviewId);
-                    
-                    // Aggiorna il localStorage
-                    saveReviewsToLocalStorage();
-                    
-                    // Aggiorna la tabella
-                    updateSavedReviewsList();
-                    
-                    showStatus('success', 'Rassegna stampa eliminata con successo.');
-                }
-            }
             
             // Funzione per mostrare messaggi di stato
             function showStatus(type, message) {
@@ -1526,6 +916,16 @@ p {
                     statusMessage.classList.add('success');
                 } else if (type === 'loading') {
                     statusMessage.classList.add('loading');
+                } else if (type === 'info') {
+                    statusMessage.classList.add('info');
+                }
+                
+                // Rimuovi il messaggio dopo 5 secondi per i messaggi di successo
+                if (type === 'success' || type === 'info') {
+                    setTimeout(() => {
+                        statusMessage.textContent = '';
+                        statusMessage.className = '';
+                    }, 5000);
                 }
             }
             
@@ -1868,7 +1268,7 @@ p {
                         // Pulsante Elimina
                         const deleteBtn = document.createElement('button');
                         deleteBtn.textContent = 'Elimina';
-                        deleteBtn.style.backgroundColor = '#f44336';
+                        deleteBtn.style.backgroundColor = 'var(--error-color)';
                         deleteBtn.addEventListener('click', () => deleteArticle(article.id));
                         actionsCell.appendChild(deleteBtn);
                         
@@ -1880,8 +1280,96 @@ p {
                     // Mostra o nascondi il pulsante di generazione rassegna stampa
                     generatePressReviewBtn.style.display = savedArticles.length > 0 ? 'inline-block' : 'none';
                 } else {
-                    savedArticlesBody.innerHTML = '<tr><td colspan="4">Nessun articolo salvato.</td></tr>';
+                    // Svuota la tabella e aggiungi un messaggio
+                    savedArticlesBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Nessun articolo salvato.</td></tr>';
+                    // Nascondi il pulsante per generare rassegna
                     generatePressReviewBtn.style.display = 'none';
+                }
+            }
+            
+            // Funzione per aggiornare la tabella delle rassegne salvate
+            function updateSavedReviewsTable() {
+                savedReviewsContainer.style.display = 'block';
+                
+                if (savedPressReviews.length > 0) {
+                    // Pulisci la tabella
+                    savedReviewsBody.innerHTML = '';
+                    
+                    // Ordina le rassegne per data di creazione (più recenti prima)
+                    const sortedReviews = [...savedPressReviews].sort((a, b) => 
+                        new Date(b.createdDate) - new Date(a.createdDate)
+                    );
+                    
+                    // Aggiungi le righe per ogni rassegna
+                    sortedReviews.forEach(review => {
+                        const row = document.createElement('tr');
+                        
+                        const titleCell = document.createElement('td');
+                        titleCell.textContent = review.title;
+                        row.appendChild(titleCell);
+                        
+                        const dateCell = document.createElement('td');
+                        dateCell.textContent = formatDateShort(new Date(review.date));
+                        row.appendChild(dateCell);
+                        
+                        const articlesCell = document.createElement('td');
+                        articlesCell.textContent = review.articles.length;
+                        row.appendChild(articlesCell);
+                        
+                        const actionsCell = document.createElement('td');
+                        actionsCell.className = 'action-cell';
+                        
+                        // Pulsante Visualizza
+                        const viewBtn = document.createElement('button');
+                        viewBtn.textContent = 'Visualizza';
+                        viewBtn.addEventListener('click', () => viewReview(review.id));
+                        actionsCell.appendChild(viewBtn);
+                        
+                        // Pulsante Elimina
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Elimina';
+                        deleteBtn.style.backgroundColor = 'var(--error-color)';
+                        deleteBtn.addEventListener('click', () => deleteReview(review.id));
+                        actionsCell.appendChild(deleteBtn);
+                        
+                        row.appendChild(actionsCell);
+                        
+                        savedReviewsBody.appendChild(row);
+                    });
+                } else {
+                    // Svuota la tabella e aggiungi un messaggio
+                    savedReviewsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Nessuna rassegna stampa salvata.</td></tr>';
+                }
+            }
+            
+            // Funzione per visualizzare una rassegna
+            function viewReview(reviewId) {
+                const review = savedPressReviews.find(r => r.id === reviewId);
+                if (!review) return;
+                
+                // Imposta la rassegna corrente
+                currentReview = review;
+                
+                // Imposta direttamente il contenuto HTML salvato
+                pressReviewContent.innerHTML = review.htmlContent;
+                
+                // Mostra il modal
+                pressReviewModal.style.display = 'block';
+            }
+            
+            // Funzione per eliminare una rassegna
+            function deleteReview(reviewId) {
+                if (confirm('Sei sicuro di voler eliminare questa rassegna stampa?')) {
+                    // Rimuovi la rassegna dall'array
+                    savedPressReviews = savedPressReviews.filter(r => r.id !== reviewId);
+                    
+                    // Aggiorna il localStorage
+                    saveReviewsToLocalStorage();
+                    
+                    // Aggiorna la tabella
+                    updateSavedReviewsTable();
+                    
+                    showStatus('success', 'Rassegna stampa eliminata con successo.');
                 }
             }
             
@@ -1957,17 +1445,44 @@ p {
                 
                 // Imposta il contenuto nel modal
                 pressReviewContent.innerHTML = reviewHTML;
+                
+                // Aggiungi i capilettera
+                addDropcaps();
+            }
+            
+            // Funzione per aggiungere i capilettera
+            function addDropcaps() {
+                const articleContents = pressReviewContent.querySelectorAll('.article-content');
+                
+                articleContents.forEach(contentDiv => {
+                    // Trova il primo paragrafo
+                    const firstParagraph = contentDiv.querySelector('p');
+                    if (firstParagraph) {
+                        const text = firstParagraph.textContent.trim();
+                        if (text.length > 0) {
+                            const firstChar = text.charAt(0);
+                            const restOfText = text.slice(1);
+                            
+                            // Sostituisci il contenuto con il capolettera
+                            firstParagraph.innerHTML = `<span class="dropcap">${firstChar}</span>${restOfText}`;
+                            
+                            // Rimuovi text-indent dal primo paragrafo per evitare spazi strani
+                            firstParagraph.style.textIndent = '0';
+                        }
+                    }
+                });
             }
             
             // Funzione per formattare l'articolo per la rassegna
             function formatArticleForReview(content) {
-                // Se il contenuto è già in HTML, mantienilo come tale
+                // Se il contenuto è già in HTML con tag <p>
                 if (content.includes('<p>') || content.includes('<h')) {
                     return content;
                 }
                 
                 // Altrimenti, converti le interruzioni di riga in paragrafi
-                return content.split('\n\n')
+                return content
+                    .split('\n\n')
                     .map(paragraph => paragraph.trim())
                     .filter(paragraph => paragraph.length > 0)
                     .map(paragraph => `<p>${paragraph}</p>`)
@@ -2117,9 +1632,15 @@ p {
                 return Date.now().toString(36) + Math.random().toString(36).substring(2);
             }
             
-            // Funzione per formattare la data
+            // Funzione per formattare la data in formato esteso italiano
             function formatDate(date) {
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('it-IT', options);
+            }
+            
+            // Funzione per formattare la data in formato compatto
+            function formatDateShort(date) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
                 return date.toLocaleDateString('it-IT', options);
             }
             
@@ -2156,7 +1677,7 @@ p {
                 if (savedReviewsJson) {
                     try {
                         savedPressReviews = JSON.parse(savedReviewsJson);
-                        updateSavedReviewsList();
+                        updateSavedReviewsTable();
                     } catch (e) {
                         console.error('Errore nel caricamento delle rassegne salvate:', e);
                     }
@@ -2174,8 +1695,130 @@ p {
             
             // Inizializza la pagina
             updateSavedArticlesTable();
-            updateSavedReviewsList();
+            updateSavedReviewsTable();
         });
     </script>
 </body>
-</html>
+</html>none';
+                showStatus('loading', 'Estrazione in corso...');
+                
+                // Utilizziamo un proxy CORS per aggirare le restrizioni di sicurezza
+                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+                
+                fetch(proxyUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Errore durante il recupero della pagina web');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Crea un elemento DOM temporaneo per analizzare l'HTML
+                        const tempEl = document.createElement('div');
+                        tempEl.innerHTML = data.contents;
+                        
+                        // Estrai le informazioni dell'articolo
+                        const articleInfo = extractArticleInfo(tempEl, url);
+                        
+                        // Popola i campi
+                        titleField.value = articleInfo.title;
+                        authorField.value = articleInfo.author;
+                        urlField.value = url;
+                        
+                        // Tenta di estrarre il nome della fonte dall'URL
+                        try {
+                            const hostname = new URL(url).hostname;
+                            const domainParts = hostname.split('.');
+                            if (domainParts.length >= 2) {
+                                const domain = domainParts[domainParts.length - 2];
+                                // Capitalizza il nome del dominio e rimuovi eventuali trattini
+                                sourceNameField.value = domain.charAt(0).toUpperCase() + 
+                                                     domain.slice(1).replace(/-/g, ' ');
+                            }
+                        } catch (e) {
+                            sourceNameField.value = '';
+                        }
+                        
+                        contentField.value = articleInfo.rawContent;
+                        
+                        // Resetta eventuali modifiche in corso
+                        currentEditArticle = null;
+                        
+                        // Mostra i risultati e nascondi lo stato di caricamento
+                        extractionResults.style.display = 'block';
+                        showStatus('success', 'Estrazione completata! Modifica i campi se necessario e salva l\'articolo.');
+                    })
+                    .catch(error => {
+                        showStatus('error', `Errore: ${error.message}`);
+                    });
+            });
+            
+            // Event listener per salvare l'articolo
+            saveArticleBtn.addEventListener('click', function() {
+                const title = titleField.value.trim();
+                const author = authorField.value.trim();
+                const url = urlField.value.trim();
+                const sourceName = sourceNameField.value.trim();
+                const content = contentField.value.trim();
+                
+                if (!title) {
+                    showStatus('error', 'Il titolo è obbligatorio.');
+                    return;
+                }
+                
+                if (!content) {
+                    showStatus('error', 'Il contenuto dell\'articolo è obbligatorio.');
+                    return;
+                }
+                
+                // Se stiamo modificando un articolo esistente
+                if (currentEditArticle) {
+                    const index = savedArticles.findIndex(article => article.id === currentEditArticle.id);
+                    if (index !== -1) {
+                        savedArticles[index] = {
+                            ...savedArticles[index],
+                            title,
+                            author,
+                            url,
+                            sourceName,
+                            content,
+                            modifiedDate: new Date().toISOString()
+                        };
+                        showStatus('success', 'Articolo aggiornato con successo!');
+                    }
+                } else {
+                    // Crea un nuovo articolo
+                    const newArticle = {
+                        id: generateUniqueId(),
+                        title,
+                        author,
+                        url,
+                        sourceName,
+                        content,
+                        createdDate: new Date().toISOString(),
+                        modifiedDate: new Date().toISOString()
+                    };
+                    
+                    savedArticles.push(newArticle);
+                    showStatus('success', 'Articolo salvato con successo!');
+                }
+                
+                // Salva gli articoli nel localStorage
+                saveArticlesToLocalStorage();
+                
+                // Aggiorna la tabella degli articoli
+                updateSavedArticlesTable();
+                
+                // Assicurati che la tab degli articoli sia visibile e attiva
+                document.querySelector('.tab[data-tab="articles"]').click();
+                
+                // Nascondi i risultati dell'estrazione
+                extractionResults.style.display = 'none';
+                
+                // Resetta i campi
+                resetExtractionFields();
+            });
+            
+            // Event listener per annullare l'estrazione
+            cancelExtractionBtn.addEventListener('click', function() {
+                extractionResults.style.display = '
