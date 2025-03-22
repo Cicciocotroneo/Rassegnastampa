@@ -238,16 +238,23 @@
                 margin: 0 !important;
                 padding: 0 !important;
             }
-            .modal-header, .modal-buttons {
+            .modal-header, .modal-buttons, .close-modal {
                 display: none !important;
             }
             .press-review-header {
-        break-after: avoid;
-        page-break-after: avoid !important;
+            page-break-after: avoid;
+            break-after: avoid;
+            page-break-after: avoid;
+            text-align: center;
+            border-bottom: 2px solid black;
+            padding-bottom: 5px;
+            margin-bottom: 0;
     }
     
     .press-review-articles {
         column-count: 2 !important; /* Forza il layout a due colonne per la stampa */
+        column-gap: 20px;
+        margin-top: 0; /* Rimuovi il margine superiore */
     }
     
     .modal-content {
@@ -261,12 +268,7 @@
             padding: 20px;
             margin-top: 20px;
         }
- .press-review-header {
-    text-align: center;
-    border-bottom: 2px solid black;
-    padding-bottom: 5px;
-    margin-bottom: 0;
-}
+
         .press-review-title {
             font-size: 28px;
             font-weight: bold;
@@ -283,16 +285,17 @@
     hyphens: auto;
     margin-top: 5px;
 }
+ /* Aggiungi una riga orizzontale tra gli articoli */
     .press-review-article:not(:last-child)::after {
-    content: '';
-    display: block;
-    width: 40%;
-    height: 1px;
-    background-color: #999;
-    margin: 10px auto;
-    break-after: avoid;
-    page-break-after: avoid;
-}
+        content: '';
+        display: block;
+        width: 40%;
+        height: 1px;
+        background-color: #999;
+        margin: 15px auto;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
 
 .press-review-article {
     break-inside: avoid;
@@ -302,6 +305,7 @@
 }
         .article-title {
             font-size: 18px;
+            line-height: 1.2; /* Regola questo valore per ridurre l'interlinea */
             font-weight: bold;
             margin-bottom: 5px;
         }
@@ -319,6 +323,13 @@
             line-height: 1.4;
             text-indent: 20px;
         }
+        .article-divider {
+    width: 40%;
+    height: 1px;
+    background-color: #999;
+    margin: 15px auto;
+    border: none;
+}
 .article-content p:first-of-type:first-letter {
     font-size: 42px;
     font-weight: bold;
@@ -337,8 +348,10 @@
 .article-content p {
     text-indent: 20px; /* Mantiene il rientro per gli altri paragrafi */
 }
-        .press-review-article {
+        /* Assicurati che gli articoli non si spezzino tra le pagine */
+    .press-review-article {
     break-inside: avoid;
+    page-break-inside: avoid;
     margin-bottom: 10px;
     padding-bottom: 10px;
 }
@@ -1274,16 +1287,16 @@ function generatePressReview() {
     
     // Crea l'intestazione della rassegna stampa
     let reviewHTML = `
-        <div class="press-review-header">
+       <div class="press-review-header">
             <div class="press-review-title">Fattariellows of the day</div>
             <div class="press-review-date">${formattedDate}</div>
         </div>
-        <div class="press-review-articles" style="column-count: 1; margin-top: 5px;">
+        <div class="press-review-articles">
     `;
     
     
     // Aggiungi ogni articolo
-    savedArticles.forEach(article => {
+    savedArticles.forEach((article, index) => {
         reviewHTML += `
             <div class="press-review-article">
                 <div class="article-title">${article.title}</div>
@@ -1294,6 +1307,9 @@ function generatePressReview() {
                 </div>
             </div>
         `;
+   if (index < savedArticles.length - 1) {
+            reviewHTML += `<hr class="article-divider">`;
+        }
     });
     
     reviewHTML += '</div>'; // Chiudi press-review-articles
