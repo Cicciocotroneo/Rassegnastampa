@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estrattore Avanzato di Articoli Web</title>
+    <title>Sistema di Rassegna Stampa</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
         }
-        h1 {
+        h1, h2, h3 {
             color: #333;
+        }
+        h1 {
             text-align: center;
+            margin-bottom: 30px;
         }
         .form-container {
             margin-bottom: 20px;
         }
-        input[type="url"] {
+        input[type="url"], input[type="text"] {
             width: 70%;
             padding: 10px;
             margin-right: 10px;
@@ -33,6 +36,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-right: 5px;
         }
         button:hover {
             background-color: #45a049;
@@ -40,6 +44,10 @@
         #extraction-results {
             display: none;
             margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
         }
         .field-container {
             margin-bottom: 20px;
@@ -62,21 +70,24 @@
         .error {
             color: red;
             font-weight: bold;
+            padding: 10px;
+            background-color: #ffe6e6;
+            border-radius: 4px;
+            margin: 10px 0;
         }
         .success {
             color: green;
             font-weight: bold;
+            padding: 10px;
+            background-color: #e6ffe6;
+            border-radius: 4px;
+            margin: 10px 0;
         }
         .loading {
             text-align: center;
             font-style: italic;
             color: #666;
-        }
-        .test-results {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f5f5f5;
-            border-radius: 4px;
+            padding: 10px;
         }
         .info-text {
             color: #666;
@@ -85,30 +96,196 @@
         }
         .action-buttons {
             display: flex;
-            justify-content: space-between;
             margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        #copy-all-btn {
+        #save-article-btn {
             background-color: #2196F3;
         }
-        #copy-all-btn:hover {
+        #save-article-btn:hover {
             background-color: #0b7dda;
         }
-        #test-extraction-btn {
-            background-color: #ff9800;
+        #generate-press-review-btn {
+            background-color: #673AB7;
         }
-        #test-extraction-btn:hover {
-            background-color: #e68a00;
+        #generate-press-review-btn:hover {
+            background-color: #5E35B1;
         }
-        #status-message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
+        #export-data-btn {
+            background-color: #FF9800;
+        }
+        #export-data-btn:hover {
+            background-color: #F57C00;
+        }
+        #reset-data-btn {
+            background-color: #f44336;
+        }
+        #reset-data-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        /* Stili per la tabella degli articoli salvati */
+        #saved-articles-container {
+            margin-top: 30px;
+            display: none;
+        }
+        .saved-articles-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .saved-articles-table th, .saved-articles-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .saved-articles-table th {
+            background-color: #f2f2f2;
+        }
+        .saved-articles-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .saved-articles-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .action-cell {
+            white-space: nowrap;
+        }
+        
+        /* Stili per il modal della rassegna stampa */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-modal:hover {
+            color: black;
+        }
+        
+        /* Stili per la visualizzazione della rassegna stampa */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #press-review-modal, #press-review-modal * {
+                visibility: visible;
+            }
+            #press-review-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: visible;
+                background-color: white;
+            }
+            #press-review-content {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .modal-header, .modal-buttons {
+                display: none !important;
+            }
+        }
+        
+        #press-review-content {
+            background-color: white;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .press-review-header {
+            text-align: center;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .press-review-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .press-review-date {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .press-review-articles {
+            column-count: 2;
+            column-gap: 20px;
+            text-align: justify;
+            hyphens: auto;
+        }
+        .press-review-article {
+            break-inside: avoid;
+            margin-bottom: 20px;
+        }
+        .article-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .article-source {
+            font-style: italic;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .article-author {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .article-content {
+            font-size: 14px;
+            line-height: 1.4;
+            text-indent: 20px;
+        }
+        .article-content p:first-of-type:first-letter {
+            font-size: 24px;
+            font-weight: bold;
+            float: left;
+            margin-right: 5px;
+            line-height: 1;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        /* Stili per il modal di importazione/esportazione */
+        #import-export-modal textarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
-    <h1>Estrattore Avanzato di Articoli Web</h1>
+    <h1>Sistema di Rassegna Stampa</h1>
     
     <div class="form-container">
         <input type="url" id="url-input" placeholder="Inserisci l'URL dell'articolo..." required>
@@ -126,12 +303,17 @@
         <div class="field-container">
             <label class="field-label" for="author-field">Autore:</label>
             <input type="text" id="author-field">
-            <div class="info-text">Potrebbe non essere sempre rilevabile</div>
+            <div class="info-text">Può essere modificato se non rilevato correttamente</div>
         </div>
         
         <div class="field-container">
-            <label class="field-label" for="url-field">URL:</label>
-            <input type="text" id="url-field" readonly>
+            <label class="field-label" for="url-field">Fonte URL:</label>
+            <input type="text" id="url-field">
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="source-name-field">Nome della Fonte:</label>
+            <input type="text" id="source-name-field" placeholder="es. La Repubblica, Il Corriere della Sera, ecc.">
         </div>
         
         <div class="field-container">
@@ -140,15 +322,76 @@
         </div>
         
         <div class="action-buttons">
-            <button id="test-extraction-btn">Testa Estrazione</button>
-            <button id="copy-all-btn">Copia Tutto</button>
+            <button id="save-article-btn">Salva Articolo</button>
+            <button id="cancel-extraction-btn">Annulla</button>
+        </div>
+    </div>
+    
+    <div id="saved-articles-container">
+        <h2>Articoli Salvati</h2>
+        <p>Da qui puoi gestire gli articoli salvati e generare la rassegna stampa.</p>
+        
+        <div class="action-buttons">
+            <button id="generate-press-review-btn">Genera Rassegna Stampa</button>
+            <button id="export-data-btn">Esporta Dati</button>
+            <button id="import-data-btn">Importa Dati</button>
+            <button id="reset-data-btn">Elimina Tutti</button>
         </div>
         
-        <div id="test-results" class="test-results" style="display: none;"></div>
+        <table class="saved-articles-table" id="saved-articles-table">
+            <thead>
+                <tr>
+                    <th>Titolo</th>
+                    <th>Fonte</th>
+                    <th>Autore</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="saved-articles-body">
+                <!-- Gli articoli salvati verranno inseriti qui dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Modal per la rassegna stampa -->
+    <div id="press-review-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" id="close-press-review">&times;</span>
+                <h2>Anteprima Rassegna Stampa</h2>
+            </div>
+            <div id="press-review-content">
+                <!-- Il contenuto della rassegna stampa verrà inserito qui dinamicamente -->
+            </div>
+            <div class="modal-buttons">
+                <button id="print-press-review-btn">Stampa</button>
+                <button id="save-press-review-btn">Salva Rassegna</button>
+                <button id="close-press-review-btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal per import/export -->
+    <div id="import-export-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" id="close-import-export">&times;</span>
+                <h2 id="import-export-title">Esporta Dati</h2>
+            </div>
+            <p id="import-export-description">Copia i dati sottostanti o salvali in un file CSV per backup.</p>
+            <textarea id="import-export-textarea"></textarea>
+            <div class="modal-buttons">
+                <button id="copy-export-btn">Copia negli Appunti</button>
+                <button id="confirm-import-btn">Importa</button>
+                <button id="download-csv-btn">Scarica CSV</button>
+                <button id="close-import-export-btn">Chiudi</button>
+            </div>
+        </div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Elementi DOM
             const urlInput = document.getElementById('url-input');
             const extractButton = document.getElementById('extract-button');
             const extractionResults = document.getElementById('extraction-results');
@@ -156,11 +399,47 @@
             const titleField = document.getElementById('title-field');
             const authorField = document.getElementById('author-field');
             const urlField = document.getElementById('url-field');
+            const sourceNameField = document.getElementById('source-name-field');
             const contentField = document.getElementById('content-field');
-            const testExtractionBtn = document.getElementById('test-extraction-btn');
-            const copyAllBtn = document.getElementById('copy-all-btn');
-            const testResults = document.getElementById('test-results');
+            const saveArticleBtn = document.getElementById('save-article-btn');
+            const cancelExtractionBtn = document.getElementById('cancel-extraction-btn');
+            const savedArticlesContainer = document.getElementById('saved-articles-container');
+            const savedArticlesBody = document.getElementById('saved-articles-body');
+            const generatePressReviewBtn = document.getElementById('generate-press-review-btn');
+            const exportDataBtn = document.getElementById('export-data-btn');
+            const importDataBtn = document.getElementById('import-data-btn');
+            const resetDataBtn = document.getElementById('reset-data-btn');
             
+            // Modal per la rassegna stampa
+            const pressReviewModal = document.getElementById('press-review-modal');
+            const closePressReview = document.getElementById('close-press-review');
+            const pressReviewContent = document.getElementById('press-review-content');
+            const printPressReviewBtn = document.getElementById('print-press-review-btn');
+            const savePressReviewBtn = document.getElementById('save-press-review-btn');
+            const closePressReviewBtn = document.getElementById('close-press-review-btn');
+            
+            // Modal per import/export
+            const importExportModal = document.getElementById('import-export-modal');
+            const closeImportExport = document.getElementById('close-import-export');
+            const importExportTitle = document.getElementById('import-export-title');
+            const importExportDescription = document.getElementById('import-export-description');
+            const importExportTextarea = document.getElementById('import-export-textarea');
+            const copyExportBtn = document.getElementById('copy-export-btn');
+            const confirmImportBtn = document.getElementById('confirm-import-btn');
+            const downloadCsvBtn = document.getElementById('download-csv-btn');
+            const closeImportExportBtn = document.getElementById('close-import-export-btn');
+            
+            // Array per memorizzare gli articoli
+            let savedArticles = [];
+            // Array per memorizzare le rassegne stampa
+            let savedPressReviews = [];
+            // Oggetto per l'articolo corrente in fase di modifica
+            let currentEditArticle = null;
+            
+            // Carica gli articoli salvati dal localStorage
+            loadSavedData();
+            
+            // Event listener per l'estrazione dell'articolo
             extractButton.addEventListener('click', function() {
                 const url = urlInput.value.trim();
                 
@@ -195,58 +474,257 @@
                         titleField.value = articleInfo.title;
                         authorField.value = articleInfo.author;
                         urlField.value = url;
-                        contentField.value = articleInfo.rawContent; // Contenuto testuale senza formattazione HTML
+                        
+                        // Tenta di estrarre il nome della fonte dall'URL
+                        try {
+                            const hostname = new URL(url).hostname;
+                            const domainParts = hostname.split('.');
+                            if (domainParts.length >= 2) {
+                                const domain = domainParts[domainParts.length - 2];
+                                // Capitalizza il nome del dominio e rimuovi eventuali trattini
+                                sourceNameField.value = domain.charAt(0).toUpperCase() + 
+                                                     domain.slice(1).replace(/-/g, ' ');
+                            }
+                        } catch (e) {
+                            sourceNameField.value = '';
+                        }
+                        
+                        contentField.value = articleInfo.rawContent;
+                        
+                        // Resetta eventuali modifiche in corso
+                        currentEditArticle = null;
                         
                         // Mostra i risultati e nascondi lo stato di caricamento
                         extractionResults.style.display = 'block';
-                        showStatus('success', 'Estrazione completata! Puoi modificare i campi qui sotto.');
-                        
-                        // Nascondi eventuali risultati di test precedenti
-                        testResults.style.display = 'none';
+                        showStatus('success', 'Estrazione completata! Modifica i campi se necessario e salva l\'articolo.');
                     })
                     .catch(error => {
                         showStatus('error', `Errore: ${error.message}`);
                     });
             });
             
-            testExtractionBtn.addEventListener('click', function() {
-                // Mostra i dati estratti in formato leggibile
-                testResults.innerHTML = `
-                    <h3>Test Risultati Estrazione:</h3>
-                    <p><strong>Titolo:</strong> ${titleField.value}</p>
-                    <p><strong>Autore:</strong> ${authorField.value || 'Non rilevato'}</p>
-                    <p><strong>URL:</strong> ${urlField.value}</p>
-                    <div><strong>Contenuto:</strong> 
-                        <div style="white-space: pre-line; max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; margin-top: 10px;">
-                            ${contentField.value}
-                        </div>
-                    </div>
-                `;
-                testResults.style.display = 'block';
-            });
-            
-            copyAllBtn.addEventListener('click', function() {
-                // Prepara il testo da copiare
-                const textToCopy = `Titolo: ${titleField.value}
-Autore: ${authorField.value}
-URL: ${urlField.value}
-
-${contentField.value}`;
+            // Event listener per salvare l'articolo
+            saveArticleBtn.addEventListener('click', function() {
+                const title = titleField.value.trim();
+                const author = authorField.value.trim();
+                const url = urlField.value.trim();
+                const sourceName = sourceNameField.value.trim();
+                const content = contentField.value.trim();
                 
-                // Copia negli appunti
-                navigator.clipboard.writeText(textToCopy)
-                    .then(() => {
-                        showStatus('success', 'Testo copiato negli appunti!');
-                        setTimeout(() => {
-                            statusMessage.textContent = '';
-                            statusMessage.className = '';
-                        }, 2000);
-                    })
-                    .catch(err => {
-                        showStatus('error', 'Errore durante la copia: ' + err);
-                    });
+                if (!title) {
+                    showStatus('error', 'Il titolo è obbligatorio.');
+                    return;
+                }
+                
+                if (!content) {
+                    showStatus('error', 'Il contenuto dell\'articolo è obbligatorio.');
+                    return;
+                }
+                
+                // Se stiamo modificando un articolo esistente
+                if (currentEditArticle) {
+                    const index = savedArticles.findIndex(article => article.id === currentEditArticle.id);
+                    if (index !== -1) {
+                        savedArticles[index] = {
+                            ...savedArticles[index],
+                            title,
+                            author,
+                            url,
+                            sourceName,
+                            content,
+                            modifiedDate: new Date().toISOString()
+                        };
+                        showStatus('success', 'Articolo aggiornato con successo!');
+                    }
+                } else {
+                    // Crea un nuovo articolo
+                    const newArticle = {
+                        id: generateUniqueId(),
+                        title,
+                        author,
+                        url,
+                        sourceName,
+                        content,
+                        createdDate: new Date().toISOString(),
+                        modifiedDate: new Date().toISOString()
+                    };
+                    
+                    savedArticles.push(newArticle);
+                    showStatus('success', 'Articolo salvato con successo!');
+                }
+                
+                // Salva gli articoli nel localStorage
+                saveArticlesToLocalStorage();
+                
+                // Aggiorna la tabella degli articoli
+                updateSavedArticlesTable();
+                
+                // Mostra il container degli articoli salvati
+                savedArticlesContainer.style.display = 'block';
+                
+                // Nascondi i risultati dell'estrazione
+                extractionResults.style.display = 'none';
+                
+                // Resetta i campi
+                resetExtractionFields();
             });
             
+            // Event listener per annullare l'estrazione
+            cancelExtractionBtn.addEventListener('click', function() {
+                extractionResults.style.display = 'none';
+                statusMessage.textContent = '';
+                currentEditArticle = null;
+                resetExtractionFields();
+            });
+            
+            // Event listener per generare la rassegna stampa
+            generatePressReviewBtn.addEventListener('click', function() {
+                if (savedArticles.length === 0) {
+                    showStatus('error', 'Non ci sono articoli salvati per generare una rassegna stampa.');
+                    return;
+                }
+                
+                // Genera la rassegna stampa
+                generatePressReview();
+                
+                // Mostra il modal
+                pressReviewModal.style.display = 'block';
+            });
+            
+            // Event listener per esportare i dati
+            exportDataBtn.addEventListener('click', function() {
+                prepareExport();
+                importExportModal.style.display = 'block';
+            });
+            
+            // Event listener per importare i dati
+            importDataBtn.addEventListener('click', function() {
+                prepareImport();
+                importExportModal.style.display = 'block';
+            });
+            
+            // Event listener per il reset dei dati
+            resetDataBtn.addEventListener('click', function() {
+                if (confirm('Sei sicuro di voler eliminare tutti gli articoli salvati? Questa azione non può essere annullata.')) {
+                    savedArticles = [];
+                    saveArticlesToLocalStorage();
+                    updateSavedArticlesTable();
+                    showStatus('success', 'Tutti gli articoli sono stati eliminati.');
+                }
+            });
+            
+            // Event listener per la stampa della rassegna
+            printPressReviewBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Event listener per salvare la rassegna
+            savePressReviewBtn.addEventListener('click', function() {
+                // Salva la rassegna attuale
+                const currentDate = new Date();
+                const reviewId = generateUniqueId();
+                const reviewTitle = `Rassegna Stampa ${formatDate(currentDate)}`;
+                
+                const reviewData = {
+                    id: reviewId,
+                    title: reviewTitle,
+                    date: currentDate.toISOString(),
+                    articles: savedArticles.map(article => article.id),
+                    htmlContent: pressReviewContent.innerHTML
+                };
+                
+                savedPressReviews.push(reviewData);
+                saveReviewsToLocalStorage();
+                
+                showStatus('success', 'Rassegna stampa salvata con successo!');
+                pressReviewModal.style.display = 'none';
+            });
+            
+            // Event listeners per chiudere i modal
+            closePressReview.addEventListener('click', function() {
+                pressReviewModal.style.display = 'none';
+            });
+            
+            closePressReviewBtn.addEventListener('click', function() {
+                pressReviewModal.style.display = 'none';
+            });
+            
+            closeImportExport.addEventListener('click', function() {
+                importExportModal.style.display = 'none';
+            });
+            
+            closeImportExportBtn.addEventListener('click', function() {
+                importExportModal.style.display = 'none';
+            });
+            
+            // Event listener per copiare i dati esportati
+            copyExportBtn.addEventListener('click', function() {
+                importExportTextarea.select();
+                document.execCommand('copy');
+                showStatus('success', 'Dati copiati negli appunti!');
+            });
+            
+            // Event listener per confermare l'importazione
+            confirmImportBtn.addEventListener('click', function() {
+                const importData = importExportTextarea.value.trim();
+                if (!importData) {
+                    showStatus('error', 'Nessun dato da importare.');
+                    return;
+                }
+                
+                try {
+                    // Tenta di analizzare i dati come CSV
+                    const importedArticles = parseCSV(importData);
+                    
+                    if (importedArticles && importedArticles.length > 0) {
+                        // Chiedi conferma prima di sovrascrivere o aggiungere
+                        const confirmAction = confirm('Vuoi sovrascrivere gli articoli esistenti (OK) o aggiungerli a quelli attuali (Annulla)?');
+                        
+                        if (confirmAction) {
+                            // Sovrascrive gli articoli esistenti
+                            savedArticles = importedArticles;
+                        } else {
+                            // Aggiunge gli articoli importati a quelli esistenti
+                            savedArticles = [...savedArticles, ...importedArticles];
+                        }
+                        
+                        saveArticlesToLocalStorage();
+                        updateSavedArticlesTable();
+                        importExportModal.style.display = 'none';
+                        showStatus('success', `Importati ${importedArticles.length} articoli con successo!`);
+                    } else {
+                        showStatus('error', 'Nessun articolo valido trovato nei dati importati.');
+                    }
+                } catch (error) {
+                    showStatus('error', `Errore durante l'importazione: ${error.message}`);
+                }
+            });
+            
+            // Event listener per scaricare i dati come CSV
+            downloadCsvBtn.addEventListener('click', function() {
+                const csv = importExportTextarea.value;
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `rassegna_stampa_export_${formatDateFileName(new Date())}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            // Quando si clicca fuori dal modal, chiudilo
+            window.addEventListener('click', function(event) {
+                if (event.target === pressReviewModal) {
+                    pressReviewModal.style.display = 'none';
+                }
+                if (event.target === importExportModal) {
+                    importExportModal.style.display = 'none';
+                }
+            });
+            
+            // Funzione per mostrare messaggi di stato
             function showStatus(type, message) {
                 statusMessage.textContent = message;
                 statusMessage.className = '';
@@ -260,6 +738,7 @@ ${contentField.value}`;
                 }
             }
             
+            // Funzione per estrarre le informazioni dell'articolo
             function extractArticleInfo(domElement, url) {
                 // Oggetto che conterrà tutte le informazioni estratte
                 const articleInfo = {
@@ -283,6 +762,7 @@ ${contentField.value}`;
                 return articleInfo;
             }
             
+            // Funzione per estrarre il titolo
             function extractTitle(domElement) {
                 // Strategia 1: Cerca il tag title
                 const titleTag = domElement.querySelector('title');
@@ -328,6 +808,7 @@ ${contentField.value}`;
                 return 'Titolo non trovato';
             }
             
+            // Funzione per estrarre l'autore
             function extractAuthor(domElement) {
                 // Strategia 1: Cerca meta tags per l'autore
                 const metaAuthorTag = domElement.querySelector('meta[name="author"], meta[property="article:author"], meta[name="twitter:creator"]');
@@ -376,6 +857,7 @@ ${contentField.value}`;
                 return '';
             }
             
+            // Funzione per estrarre il contenuto dell'articolo
             function extractArticleContent(domElement) {
                 // Risultato dell'estrazione
                 const result = {
@@ -462,6 +944,7 @@ ${contentField.value}`;
                 return result;
             }
             
+            // Funzione per pulire e formattare il contenuto
             function cleanAndFormatContent(element) {
                 // Clona l'elemento per non modificare l'originale
                 const clone = element.cloneNode(true);
@@ -507,6 +990,7 @@ ${contentField.value}`;
                 return result;
             }
             
+            // Funzione per estrarre il testo raw
             function extractRawText(element) {
                 // Clona l'elemento per non modificare l'originale
                 const clone = element.cloneNode(true);
@@ -550,6 +1034,354 @@ ${contentField.value}`;
                 
                 return paragraphs.join('\n\n');
             }
+            
+            // Funzione per aggiornare la tabella degli articoli salvati
+            function updateSavedArticlesTable() {
+                // Mostra il container degli articoli salvati se ci sono articoli
+                if (savedArticles.length > 0) {
+                    savedArticlesContainer.style.display = 'block';
+                    
+                    // Pulisci la tabella
+                    savedArticlesBody.innerHTML = '';
+                    
+                    // Ordina gli articoli per data di creazione (più recenti prima)
+                    const sortedArticles = [...savedArticles].sort((a, b) => 
+                        new Date(b.createdDate) - new Date(a.createdDate)
+                    );
+                    
+                    // Aggiungi le righe per ogni articolo
+                    sortedArticles.forEach(article => {
+                        const row = document.createElement('tr');
+                        
+                        const titleCell = document.createElement('td');
+                        titleCell.textContent = article.title;
+                        row.appendChild(titleCell);
+                        
+                        const sourceCell = document.createElement('td');
+                        sourceCell.textContent = article.sourceName || 'N/A';
+                        row.appendChild(sourceCell);
+                        
+                        const authorCell = document.createElement('td');
+                        authorCell.textContent = article.author || 'N/A';
+                        row.appendChild(authorCell);
+                        
+                        const actionsCell = document.createElement('td');
+                        actionsCell.className = 'action-cell';
+                        
+                        // Pulsante Modifica
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Modifica';
+                        editBtn.addEventListener('click', () => editArticle(article.id));
+                        actionsCell.appendChild(editBtn);
+                        
+                        // Pulsante Elimina
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Elimina';
+                        deleteBtn.style.backgroundColor = '#f44336';
+                        deleteBtn.addEventListener('click', () => deleteArticle(article.id));
+                        actionsCell.appendChild(deleteBtn);
+                        
+                        row.appendChild(actionsCell);
+                        
+                        savedArticlesBody.appendChild(row);
+                    });
+                    
+                    // Mostra o nascondi il pulsante di generazione rassegna stampa
+                    generatePressReviewBtn.style.display = savedArticles.length > 0 ? 'inline-block' : 'none';
+                } else {
+                    savedArticlesBody.innerHTML = '<tr><td colspan="4">Nessun articolo salvato.</td></tr>';
+                    generatePressReviewBtn.style.display = 'none';
+                }
+            }
+            
+            // Funzione per modificare un articolo
+            function editArticle(articleId) {
+                const article = savedArticles.find(a => a.id === articleId);
+                if (!article) return;
+                
+                // Popola i campi con i dati dell'articolo
+                titleField.value = article.title;
+                authorField.value = article.author || '';
+                urlField.value = article.url || '';
+                sourceNameField.value = article.sourceName || '';
+                contentField.value = article.content;
+                
+                // Salva riferimento all'articolo corrente
+                currentEditArticle = article;
+                
+                // Mostra i risultati dell'estrazione
+                extractionResults.style.display = 'block';
+                
+                // Scorrimento verso l'alto
+                window.scrollTo(0, 0);
+                
+                showStatus('success', 'Modifica l\'articolo e salva le modifiche.');
+            }
+            
+            // Funzione per eliminare un articolo
+            function deleteArticle(articleId) {
+                if (confirm('Sei sicuro di voler eliminare questo articolo?')) {
+                    // Rimuovi l'articolo dall'array
+                    savedArticles = savedArticles.filter(a => a.id !== articleId);
+                    
+                    // Aggiorna il localStorage
+                    saveArticlesToLocalStorage();
+                    
+                    // Aggiorna la tabella
+                    updateSavedArticlesTable();
+                    
+                    showStatus('success', 'Articolo eliminato con successo.');
+                }
+            }
+            
+            // Funzione per generare la rassegna stampa
+            function generatePressReview() {
+                const currentDate = new Date();
+                const formattedDate = formatDate(currentDate);
+                
+                // Crea l'intestazione della rassegna stampa
+                let reviewHTML = `
+                    <div class="press-review-header">
+                        <div class="press-review-title">Rassegna Stampa</div>
+                        <div class="press-review-date">${formattedDate}</div>
+                    </div>
+                    <div class="press-review-articles">
+                `;
+                
+                // Aggiungi ogni articolo
+                savedArticles.forEach(article => {
+                    reviewHTML += `
+                        <div class="press-review-article">
+                            <div class="article-title">${article.title}</div>
+                            <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
+                            ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
+                            <div class="article-content">
+                                ${formatArticleForReview(article.content)}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                reviewHTML += '</div>'; // Chiudi press-review-articles
+                
+                // Imposta il contenuto nel modal
+                pressReviewContent.innerHTML = reviewHTML;
+            }
+            
+            // Funzione per formattare l'articolo per la rassegna
+            function formatArticleForReview(content) {
+                // Se il contenuto è già in HTML, mantienilo come tale
+                if (content.includes('<p>') || content.includes('<h')) {
+                    return content;
+                }
+                
+                // Altrimenti, converti le interruzioni di riga in paragrafi
+                return content.split('\n\n')
+                    .map(paragraph => paragraph.trim())
+                    .filter(paragraph => paragraph.length > 0)
+                    .map(paragraph => `<p>${paragraph}</p>`)
+                    .join('');
+            }
+            
+            // Funzione per prepararsi all'esportazione dei dati
+            function prepareExport() {
+                // Nasconde/mostra i pulsanti appropriati
+                confirmImportBtn.style.display = 'none';
+                copyExportBtn.style.display = 'inline-block';
+                downloadCsvBtn.style.display = 'inline-block';
+                
+                // Imposta il titolo e la descrizione
+                importExportTitle.textContent = 'Esporta Dati';
+                importExportDescription.textContent = 'Copia i dati sottostanti o salvali in un file CSV per backup.';
+                
+                // Genera il CSV
+                const csvContent = generateCSV();
+                importExportTextarea.value = csvContent;
+            }
+            
+            // Funzione per prepararsi all'importazione dei dati
+            function prepareImport() {
+                // Nasconde/mostra i pulsanti appropriati
+                confirmImportBtn.style.display = 'inline-block';
+                copyExportBtn.style.display = 'none';
+                downloadCsvBtn.style.display = 'none';
+                
+                // Imposta il titolo e la descrizione
+                importExportTitle.textContent = 'Importa Dati';
+                importExportDescription.textContent = 'Incolla qui i dati CSV da importare.';
+                
+                // Pulisci l'area di testo
+                importExportTextarea.value = '';
+            }
+            
+            // Funzione per generare CSV dagli articoli
+            function generateCSV() {
+                // Intestazioni CSV
+                const headers = ['id', 'title', 'author', 'sourceName', 'url', 'content', 'createdDate', 'modifiedDate'];
+                
+                // Crea la riga di intestazione
+                let csv = headers.join(',') + '\n';
+                
+                // Aggiungi ogni articolo
+                savedArticles.forEach(article => {
+                    const row = headers.map(header => {
+                        // Gestisci i campi di testo con virgole o virgolette
+                        if (typeof article[header] === 'string') {
+                            // Sostituisci le virgolette con doppia virgoletta (standard CSV)
+                            const escaped = article[header].replace(/"/g, '""');
+                            // Racchiudi tra virgolette per gestire virgole e interruzioni di riga
+                            return `"${escaped}"`;
+                        }
+                        return article[header] || '';
+                    });
+                    
+                    csv += row.join(',') + '\n';
+                });
+                
+                return csv;
+            }
+            
+            // Funzione per analizzare dati CSV
+            function parseCSV(csvData) {
+                const rows = csvData.split('\n');
+                const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                
+                // Verifica che i dati contengano le intestazioni necessarie
+                const requiredHeaders = ['title', 'content'];
+                const hasRequiredHeaders = requiredHeaders.every(header => 
+                    headers.includes(header)
+                );
+                
+                if (!hasRequiredHeaders) {
+                    throw new Error('Il formato CSV non è valido. Mancano intestazioni obbligatorie.');
+                }
+                
+                const articles = [];
+                
+                // Analizza le righe di dati (salta l'intestazione)
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].trim();
+                    if (!row) continue; // Salta righe vuote
+                    
+                    // Gestisce valori tra virgolette contenenti virgole
+                    let values = [];
+                    let inQuotes = false;
+                    let currentValue = '';
+                    
+                    for (let j = 0; j < row.length; j++) {
+                        const char = row[j];
+                        
+                        if (char === '"') {
+                            if (j < row.length - 1 && row[j + 1] === '"') {
+                                // Gestisce le virgolette doppie escape
+                                currentValue += '"';
+                                j++; // Salta il carattere successivo
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if (char === ',' && !inQuotes) {
+                            values.push(currentValue);
+                            currentValue = '';
+                        } else {
+                            currentValue += char;
+                        }
+                    }
+                    
+                    // Aggiungi l'ultimo valore
+                    values.push(currentValue);
+                    
+                    // Crea un oggetto articolo con i valori analizzati
+                    const article = {};
+                    headers.forEach((header, index) => {
+                        if (index < values.length) {
+                            article[header] = values[index];
+                        } else {
+                            article[header] = '';
+                        }
+                    });
+                    
+                    // Verifica che l'articolo abbia i campi obbligatori
+                    if (article.title && article.content) {
+                        // Assicurati che ogni articolo abbia un ID unico
+                        if (!article.id) {
+                            article.id = generateUniqueId();
+                        }
+                        // Imposta date se mancanti
+                        if (!article.createdDate) {
+                            article.createdDate = new Date().toISOString();
+                        }
+                        if (!article.modifiedDate) {
+                            article.modifiedDate = new Date().toISOString();
+                        }
+                        
+                        articles.push(article);
+                    }
+                }
+                
+                return articles;
+            }
+            
+            // Funzione per generare un ID unico
+            function generateUniqueId() {
+                return Date.now().toString(36) + Math.random().toString(36).substring(2);
+            }
+            
+            // Funzione per formattare la data
+            function formatDate(date) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('it-IT', options);
+            }
+            
+            // Funzione per formattare la data nel nome del file
+            function formatDateFileName(date) {
+                return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            }
+            
+            // Funzione per salvare gli articoli nel localStorage
+            function saveArticlesToLocalStorage() {
+                localStorage.setItem('savedArticles', JSON.stringify(savedArticles));
+            }
+            
+            // Funzione per salvare le rassegne nel localStorage
+            function saveReviewsToLocalStorage() {
+                localStorage.setItem('savedPressReviews', JSON.stringify(savedPressReviews));
+            }
+            
+            // Funzione per caricare i dati salvati dal localStorage
+            function loadSavedData() {
+                // Carica gli articoli
+                const savedArticlesJson = localStorage.getItem('savedArticles');
+                if (savedArticlesJson) {
+                    try {
+                        savedArticles = JSON.parse(savedArticlesJson);
+                        updateSavedArticlesTable();
+                    } catch (e) {
+                        console.error('Errore nel caricamento degli articoli salvati:', e);
+                    }
+                }
+                
+                // Carica le rassegne
+                const savedReviewsJson = localStorage.getItem('savedPressReviews');
+                if (savedReviewsJson) {
+                    try {
+                        savedPressReviews = JSON.parse(savedReviewsJson);
+                    } catch (e) {
+                        console.error('Errore nel caricamento delle rassegne salvate:', e);
+                    }
+                }
+            }
+            
+            // Funzione per resettare i campi di estrazione
+            function resetExtractionFields() {
+                titleField.value = '';
+                authorField.value = '';
+                urlField.value = '';
+                sourceNameField.value = '';
+                contentField.value = '';
+            }
+            
+            // Inizializza la pagina
+            updateSavedArticlesTable();
         });
     </script>
 </body>
