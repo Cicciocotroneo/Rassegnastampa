@@ -248,7 +248,7 @@
             text-align: center;
             border-bottom: 2px solid black;
             padding-bottom: 5px;
-            margin-bottom: 0;
+            margin-bottom: 10px;
     }
     
     .press-review-articles {
@@ -287,7 +287,14 @@
     hyphens: auto;
     margin-top: 5px;
 }
-
+ .press-review-article:not(:last-child)::after {
+        content: '***'; /* Aggiungi l'asterisco */
+        display: block;
+        text-align: center; /* Centra l'asterisco */
+        margin: 20px 0; /* Aggiungi spazio sopra e sotto l'asterisco */
+        font-size: 18px; /* Dimensione dell'asterisco */
+        color: #000; /* Colore dell'asterisco */
+      }
  /* Aggiungi una riga orizzontale tra gli articoli */
    /* .press-review-article:not(:last-child)::after {
         content: '';
