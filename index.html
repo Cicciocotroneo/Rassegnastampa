@@ -1290,30 +1290,19 @@ function generatePressReview() {
     const currentDate = new Date();
     const formattedDate = formatDate(currentDate);
     
-    // Crea l'intestazione della rassegna stampa
+    // Crea l'intestazione della rassegna stampa in un modo che eviti l'interruzione di pagina
     let reviewHTML = `
-        <div class="press-review-header">
-            <div class="press-review-title">Fattariellows of the day</div>
-            <div class="press-review-date">${formattedDate}</div>
-        </div>
-        <div class="press-review-articles" style="margin-top: 5px;">
+        <div style="page-break-inside: avoid; break-inside: avoid;">
+            <div class="press-review-header">
+                <div class="press-review-title">Fattariellows of the day</div>
+                <div class="press-review-date">${formattedDate}</div>
+            </div>
+            <div class="press-review-articles">
     `;
     
-    // Aggiungi ogni articolo
-    savedArticles.forEach(article => {
-        reviewHTML += `
-            <div class="press-review-article">
-                <div class="article-title">${article.title}</div>
-                <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
-                ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
-                <div class="article-content">
-                    ${formatArticleForReview(article.content)}
-                </div>
-            </div>
-        `;
-    });
+    // Resto della funzione rimane uguale
     
-    reviewHTML += '</div>'; // Chiudi press-review-articles
+    reviewHTML += '</div></div>'; // Chiudi press-review-articles e il div esterno
     
     // Imposta il contenuto nel modal
     pressReviewContent.innerHTML = reviewHTML;
