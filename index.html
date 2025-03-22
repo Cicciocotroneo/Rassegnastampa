@@ -216,6 +216,7 @@
         @media print {
             body * {
                 visibility: hidden;
+                font-family: 'Times New Roman', Times, serif !important;
             }
             #press-review-modal, #press-review-modal * {
                 visibility: visible;
@@ -231,45 +232,20 @@
                 height: 100%;
                 overflow: visible;
                 background-color: white;
-                margin: 0;
-                padding: 0;
             }
             #press-review-content, #view-review-content {
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                page-break-before: avoid !important;
-                page-break-after: avoid !important;
-            }
-            .press-review-article {
-                page-break-inside: avoid !important;
             }
             .modal-header, .modal-buttons {
                 display: none !important;
             }
-            .modal-content {
-                border: none !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: visible !important;
-                height: auto !important;
-                max-height: none !important;
-            }
-            html, body {
-                overflow: visible !important;
-                height: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            ::-webkit-scrollbar {
-                display: none !important;
-            }
         }
         
-        #press-review-content {
+        #press-review-content, #view-review-content {
             background-color: white;
-            font-family: 'Times New Roman', Times, serif !important;
+            font-family: 'Times New Roman', Times, serif;
             padding: 20px;
             margin-top: 20px;
         }
@@ -283,19 +259,16 @@
             font-size: 28px;
             font-weight: bold;
             margin-bottom: 5px;
-            font-family: 'Times New Roman', Times, serif !important;
         }
         .press-review-date {
             font-size: 16px;
             margin-bottom: 10px;
-            font-family: 'Times New Roman', Times, serif !important;
         }
         .press-review-articles {
             column-count: 2;
             column-gap: 20px;
             text-align: justify;
             hyphens: auto;
-            font-family: 'Times New Roman', Times, serif !important;
         }
         .press-review-article {
             break-inside: avoid;
@@ -321,23 +294,15 @@
             text-indent: 20px;
         }
         .article-content p:first-of-type:first-letter {
-            font-size: 32px;
+            font-size: 22px;
             font-weight: bold;
             float: left;
-            margin: 0 4px 0 0;
-            line-height: 0.8;
-            padding-top: 4px;
+            margin-right: 4px;
+            line-height: 1;
         }
         .article-content p {
             word-spacing: normal !important;
             letter-spacing: normal !important;
-        }
-        
-        /* Separatore tra articoli */
-        .article-separator {
-            width: 50%;
-            margin: 20px auto;
-            border-top: 1px solid #888;
         }
         
         /* Rimuove le barre di scorrimento nella stampa */
@@ -528,32 +493,6 @@
             const exportDataBtn = document.getElementById('export-data-btn');
             const importDataBtn = document.getElementById('import-data-btn');
             const resetDataBtn = document.getElementById('reset-data-btn');
-            
-            // Modal per la rassegna stampa
-            const pressReviewModal = document.getElementById('press-review-modal');
-            const closePressReview = document.getElementById('close-press-review');
-            const pressReviewContent = document.getElementById('press-review-content');
-            const printPressReviewBtn = document.getElementById('print-press-review-btn');
-            const savePressReviewBtn = document.getElementById('save-press-review-btn');
-            const closePressReviewBtn = document.getElementById('close-press-review-btn');
-            
-            // Modal per visualizzare le rassegne salvate
-            const viewReviewModal = document.getElementById('view-review-modal');
-            const closeViewReview = document.getElementById('close-view-review');
-            const viewReviewContent = document.getElementById('view-review-content');
-            const printSavedReviewBtn = document.getElementById('print-saved-review-btn');
-            const closeViewReviewBtn = document.getElementById('close-view-review-btn');
-            
-            // Modal per import/export
-            const importExportModal = document.getElementById('import-export-modal');
-            const closeImportExport = document.getElementById('close-import-export');
-            const importExportTitle = document.getElementById('import-export-title');
-            const importExportDescription = document.getElementById('import-export-description');
-            const importExportTextarea = document.getElementById('import-export-textarea');
-            const copyExportBtn = document.getElementById('copy-export-btn');
-            const confirmImportBtn = document.getElementById('confirm-import-btn');
-            const downloadCsvBtn = document.getElementById('download-csv-btn');
-            const closeImportExportBtn = document.getElementById('close-import-export-btn');
             
             // Modal per la rassegna stampa
             const pressReviewModal = document.getElementById('press-review-modal');
@@ -869,9 +808,6 @@
                 }
                 if (event.target === importExportModal) {
                     importExportModal.style.display = 'none';
-                }
-                if (event.target === viewReviewModal) {
-                    viewReviewModal.style.display = 'none';
                 }
             });
             
@@ -1300,16 +1236,15 @@
                 `;
                 
                 // Aggiungi ogni articolo
-                savedArticles.forEach((article, index) => {
+                savedArticles.forEach(article => {
                     reviewHTML += `
                         <div class="press-review-article">
-                            <div class="article-title" style="font-family: 'Times New Roman', Times, serif;">${article.title}</div>
-                            <div class="article-source" style="font-family: 'Times New Roman', Times, serif;">${article.sourceName || 'Fonte sconosciuta'}</div>
-                            ${article.author ? `<div class="article-author" style="font-family: 'Times New Roman', Times, serif;">${article.author}</div>` : ''}
-                            <div class="article-content" style="font-family: 'Times New Roman', Times, serif;">
+                            <div class="article-title">${article.title}</div>
+                            <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
+                            ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
+                            <div class="article-content">
                                 ${formatArticleForReview(article.content)}
                             </div>
-                            ${index < savedArticles.length - 1 ? '<div class="article-separator"></div>' : ''}
                         </div>
                     `;
                 });
@@ -1331,7 +1266,7 @@
                 return content.split('\n\n')
                     .map(paragraph => paragraph.trim())
                     .filter(paragraph => paragraph.length > 0)
-                    .map(paragraph => `<p style="font-family: 'Times New Roman', Times, serif;">${paragraph}</p>`)
+                    .map(paragraph => `<p>${paragraph}</p>`)
                     .join('');
             }
             
@@ -1532,13 +1467,12 @@
                 contentField.value = '';
             }
             
-            // Variabili globali del modal
-            const pressReviewModal = document.getElementById('press-review-modal');
-            const closePressReview = document.getElementById('close-press-review');
-            const pressReviewContent = document.getElementById('press-review-content');
-            const printPressReviewBtn = document.getElementById('print-press-review-btn');
-            const savePressReviewBtn = document.getElementById('save-press-review-btn');
-            const closePressReviewBtn = document.getElementById('close-press-review-btn');
+            // Modal per visualizzare le rassegne salvate
+            const viewReviewModal = document.getElementById('view-review-modal');
+            const closeViewReview = document.getElementById('close-view-review');
+            const viewReviewContent = document.getElementById('view-review-content');
+            const printSavedReviewBtn = document.getElementById('print-saved-review-btn');
+            const closeViewReviewBtn = document.getElementById('close-view-review-btn');
             
             // Chiusura del modal di visualizzazione rassegna
             closeViewReview.addEventListener('click', function() {
@@ -1551,120 +1485,25 @@
             
             // Stampa della rassegna salvata
             printSavedReviewBtn.addEventListener('click', function() {
-                // Prepara il contenuto per la stampa
-                preparePrintView();
+                // Rimuove temporaneamente i bordi del modal per la stampa
+                const modalContent = viewReviewModal.querySelector('.modal-content');
+                const originalBorder = modalContent.style.border;
+                modalContent.style.border = 'none';
+                
+                // Nasconde le barre di scorrimento
+                document.body.style.overflow = 'hidden';
+                modalContent.style.overflow = 'hidden';
                 
                 // Usa la funzione di stampa del browser
                 window.print();
                 
-                // Ripristina la visualizzazione normale
+                // Ripristina i bordi e le barre di scorrimento
                 setTimeout(() => {
-                    resetPrintView();
+                    modalContent.style.border = originalBorder;
+                    document.body.style.overflow = '';
+                    modalContent.style.overflow = 'auto';
                 }, 1000);
             });
-            
-            // Genera EPUB dagli articoli
-            function generateEpub(articles, title) {
-                if (!articles || articles.length === 0) {
-                    showStatus('error', 'Nessun articolo disponibile per generare l\'EPUB.');
-                    return;
-                }
-                
-                // Crea l'indice degli articoli
-                let tocHtml = '<h1>Indice</h1>\n<ul>\n';
-                for (let i = 0; i < articles.length; i++) {
-                    tocHtml += `<li><a href="#article-${i}">${articles[i].title}</a></li>\n`;
-                }
-                tocHtml += '</ul>';
-                
-                // Crea il contenuto degli articoli
-                let contentHtml = '';
-                for (let i = 0; i < articles.length; i++) {
-                    const article = articles[i];
-                    contentHtml += `<h1 id="article-${i}">${article.title}</h1>\n`;
-                    
-                    if (article.sourceName) {
-                        contentHtml += `<p class="source"><em>Fonte: ${article.sourceName}</em></p>\n`;
-                    }
-                    
-                    if (article.author) {
-                        contentHtml += `<p class="author"><strong>${article.author}</strong></p>\n`;
-                    }
-                    
-                    // Formatta il contenuto
-                    let formattedContent = article.content;
-                    if (!formattedContent.includes('<p>')) {
-                        formattedContent = article.content.split('\n\n')
-                            .map(p => p.trim())
-                            .filter(p => p.length > 0)
-                            .map(p => `<p>${p}</p>`)
-                            .join('\n');
-                    }
-                    
-                    contentHtml += formattedContent + '\n<hr>\n';
-                }
-                
-                // Crea il contenuto completo dell'EPUB
-                const epubContent = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <meta charset="UTF-8" />
-    <title>${title}</title>
-    <style>
-        body { 
-            font-family: serif; 
-            margin: 2em; 
-            line-height: 1.5;
-        }
-        h1 { 
-            font-size: 1.5em; 
-            margin: 1em 0 0.5em 0; 
-        }
-        .source { 
-            font-style: italic; 
-            margin: 0.5em 0; 
-        }
-        .author { 
-            font-weight: bold; 
-            margin: 0.5em 0 1em 0; 
-        }
-        hr { 
-            margin: 2em 0; 
-            border: none; 
-            border-top: 1px solid #ccc; 
-        }
-    </style>
-</head>
-<body>
-    <div id="toc">
-        ${tocHtml}
-    </div>
-    <div id="content">
-        ${contentHtml}
-    </div>
-</body>
-</html>`;
-                
-                // Crea un oggetto Blob per l'EPUB
-                const blob = new Blob([epubContent], { type: 'application/epub+zip' });
-                
-                // Crea un URL per il blob
-                const url = URL.createObjectURL(blob);
-                
-                // Crea un link per scaricare il file
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.epub`;
-                document.body.appendChild(link);
-                link.click();
-                
-                // Pulizia
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                
-                showStatus('success', 'EPUB generato con successo! Il download dovrebbe iniziare automaticamente.');
-            }
             
             // Funzione per aggiornare la lista delle rassegne salvate
             function updateSavedReviewsList() {
@@ -1733,12 +1572,6 @@
                 // Imposta il contenuto nel modal
                 viewReviewContent.innerHTML = review.htmlContent;
                 viewReviewContent.dataset.reviewId = reviewId;
-                
-                // Applica il font serif a tutti gli elementi
-                const elements = viewReviewContent.querySelectorAll('*');
-                elements.forEach(el => {
-                    el.style.fontFamily = "'Times New Roman', Times, serif";
-                });
                 
                 // Mostra il modal
                 viewReviewModal.style.display = 'block';
