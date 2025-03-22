@@ -1274,11 +1274,30 @@
             }
             
             // Funzione per formattare l'articolo per la rassegna
-            function formatArticleForReview(content) {
-                // Se il contenuto è già in HTML, mantienilo come tale
-                if (content.includes('<p>') || content.includes('<h')) {
-                    return content;
-                }
+function formatArticleForReview(content) {
+    // Se il contenuto è già in HTML, mantienilo come tale
+    if (content.includes('<p>') || content.includes('<h')) {
+        return content;
+    }
+    
+    // Dividi in paragrafi
+    const paragraphs = content.split('\n\n')
+        .map(paragraph => paragraph.trim())
+        .filter(paragraph => paragraph.length > 0);
+    
+    // Assicurati che ci sia almeno un paragrafo
+    if (paragraphs.length === 0) return '<p></p>';
+    
+    // Formatta il primo paragrafo per il capolettera
+    let formattedContent = `<p>${paragraphs[0]}</p>`;
+    
+    // Aggiungi i restanti paragrafi
+    for (let i = 1; i < paragraphs.length; i++) {
+        formattedContent += `<p>${paragraphs[i]}</p>`;
+    }
+    
+    return formattedContent;
+}
                 
                 // Altrimenti, converti le interruzioni di riga in paragrafi
                 return content.split('\n\n')
