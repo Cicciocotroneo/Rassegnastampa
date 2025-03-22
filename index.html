@@ -256,6 +256,16 @@
         column-gap: 20px;
         margin-top: 0; /* Rimuovi il margine superiore */
     }
+
+              .press-review-article:not(:last-child)::after {
+        content: '';
+        display: block;
+        width: 40%;
+        height: 1px;
+        background-color: #999;
+        margin: 15px auto;
+        break-inside: avoid; /* Evita interruzioni di pagina */
+    }
     
     .modal-content {
         border: none !important; /* Rimuove il bordo durante la stampa per mobile */
@@ -370,15 +380,7 @@
                 overflow: visible !important;
                 max-height: none !important;
             }
-               .press-review-article:not(:last-child)::after {
-        content: '';
-        display: block;
-        width: 40%;
-        height: 1px;
-        background-color: #999;
-        margin: 15px auto;
-        break-inside: avoid; /* Evita interruzioni di pagina */
-    }
+
         }
         .modal-buttons {
             margin-top: 20px;
