@@ -248,38 +248,13 @@
             font-family: 'Times New Roman', Times, serif;
             padding: 20px;
             margin-top: 20px;
-page-break-inside: auto !important;
-        break-inside: auto !important;
         }
-
-/* Forza la rimozione di spazi vuoti */
-    * {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-    }
-    
-    /* Ripristina i margini essenziali ma mantieni piccoli */
-    .press-review-article, .article-title, .article-source, .article-author, .article-content p {
-        margin-bottom: 3px !important;
-        padding-bottom: 3px !important;
-    }
-    
-    .press-review-title {
-        margin-bottom: 2px !important;
-    }
-    
-    .press-review-date {
-        margin-bottom: 5px !important;
-    }
-}
  .press-review-header {
-        margin-bottom: 0 !important;
-        padding-bottom: 2px !important;
-        page-break-after: avoid !important;
-        break-after: avoid !important;
-    }
+    text-align: center;
+    border-bottom: 2px solid black;
+    padding-bottom: 5px;
+    margin-bottom: 0;
+}
         .press-review-title {
             font-size: 28px;
             font-weight: bold;
@@ -289,17 +264,12 @@ page-break-inside: auto !important;
             font-size: 16px;
             margin-bottom: 10px;
         }
-     .press-review-articles {
+      .press-review-articles {
     column-count: 2;
     column-gap: 20px;
     text-align: justify;
     hyphens: auto;
-    height: auto;
-    min-height: 500px; /* Aggiungi questa riga */
-    column-fill: balance; /* Aggiungi questa riga per bilanciare il contenuto nelle colonne */
-margin-top: 2px !important;
-        page-break-before: avoid !important;
-        break-before: avoid !important;
+    margin-top: 5px;
 }
     .press-review-article:not(:last-child)::after {
     content: '';
@@ -1290,19 +1260,30 @@ function generatePressReview() {
     const currentDate = new Date();
     const formattedDate = formatDate(currentDate);
     
-    // Crea l'intestazione della rassegna stampa in un modo che eviti l'interruzione di pagina
+    // Crea l'intestazione della rassegna stampa
     let reviewHTML = `
-        <div style="page-break-inside: avoid; break-inside: avoid;">
-            <div class="press-review-header">
-                <div class="press-review-title">Fattariellows of the day</div>
-                <div class="press-review-date">${formattedDate}</div>
-            </div>
-            <div class="press-review-articles">
+        <div class="press-review-header">
+            <div class="press-review-title">Fattariellows of the day</div>
+            <div class="press-review-date">${formattedDate}</div>
+        </div>
+        <div class="press-review-articles" style="margin-top: 5px;">
     `;
     
-    // Resto della funzione rimane uguale
+    // Aggiungi ogni articolo
+    savedArticles.forEach(article => {
+        reviewHTML += `
+            <div class="press-review-article">
+                <div class="article-title">${article.title}</div>
+                <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
+                ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
+                <div class="article-content">
+                    ${formatArticleForReview(article.content)}
+                </div>
+            </div>
+        `;
+    });
     
-    reviewHTML += '</div></div>'; // Chiudi press-review-articles e il div esterno
+    reviewHTML += '</div>'; // Chiudi press-review-articles
     
     // Imposta il contenuto nel modal
     pressReviewContent.innerHTML = reviewHTML;
