@@ -248,13 +248,38 @@
             font-family: 'Times New Roman', Times, serif;
             padding: 20px;
             margin-top: 20px;
+page-break-inside: auto !important;
+        break-inside: auto !important;
         }
- .press-review-header {
-    text-align: center;
-    border-bottom: 2px solid black;
-    padding-bottom: 5px;
-    margin-bottom: 0;
+
+/* Forza la rimozione di spazi vuoti */
+    * {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    /* Ripristina i margini essenziali ma mantieni piccoli */
+    .press-review-article, .article-title, .article-source, .article-author, .article-content p {
+        margin-bottom: 3px !important;
+        padding-bottom: 3px !important;
+    }
+    
+    .press-review-title {
+        margin-bottom: 2px !important;
+    }
+    
+    .press-review-date {
+        margin-bottom: 5px !important;
+    }
 }
+ .press-review-header {
+        margin-bottom: 0 !important;
+        padding-bottom: 2px !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+    }
         .press-review-title {
             font-size: 28px;
             font-weight: bold;
@@ -264,12 +289,17 @@
             font-size: 16px;
             margin-bottom: 10px;
         }
-      .press-review-articles {
+     .press-review-articles {
     column-count: 2;
     column-gap: 20px;
     text-align: justify;
     hyphens: auto;
-    margin-top: 5px;
+    height: auto;
+    min-height: 500px; /* Aggiungi questa riga */
+    column-fill: balance; /* Aggiungi questa riga per bilanciare il contenuto nelle colonne */
+margin-top: 2px !important;
+        page-break-before: avoid !important;
+        break-before: avoid !important;
 }
     .press-review-article:not(:last-child)::after {
     content: '';
