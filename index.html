@@ -153,6 +153,31 @@
             white-space: nowrap;
         }
         
+        /* Stili per la lista delle rassegne salvate */
+        #saved-reviews-container {
+            margin-top: 30px;
+            display: none;
+        }
+        .saved-reviews-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .saved-reviews-table th, .saved-reviews-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .saved-reviews-table th {
+            background-color: #f2f2f2;
+        }
+        .saved-reviews-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .saved-reviews-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
         /* Stili per il modal della rassegna stampa */
         .modal {
             display: none;
@@ -265,11 +290,29 @@
             text-indent: 20px;
         }
         .article-content p:first-of-type:first-letter {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             float: left;
-            margin-right: 5px;
+            margin-right: 4px;
             line-height: 1;
+        }
+        .article-content p {
+            word-spacing: normal !important;
+            letter-spacing: normal !important;
+        }
+        
+        /* Rimuove le barre di scorrimento nella stampa */
+        @media print {
+            html, body {
+                overflow: visible !important;
+            }
+            ::-webkit-scrollbar {
+                display: none !important;
+            }
+            .modal-content {
+                overflow: visible !important;
+                max-height: none !important;
+            }
         }
         .modal-buttons {
             margin-top: 20px;
@@ -353,6 +396,26 @@
         </table>
     </div>
     
+    <!-- Container per le rassegne stampa salvate -->
+    <div id="saved-reviews-container">
+        <h2>Rassegne Stampa Salvate</h2>
+        <p>Qui puoi visualizzare, scaricare o eliminare le rassegne stampa che hai generato.</p>
+        
+        <table class="saved-reviews-table" id="saved-reviews-table">
+            <thead>
+                <tr>
+                    <th>Titolo</th>
+                    <th>Data</th>
+                    <th>N° Articoli</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="saved-reviews-body">
+                <!-- Le rassegne salvate verranno inserite qui dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+    
     <!-- Modal per la rassegna stampa -->
     <div id="press-review-modal" class="modal">
         <div class="modal-content">
@@ -364,9 +427,28 @@
                 <!-- Il contenuto della rassegna stampa verrà inserito qui dinamicamente -->
             </div>
             <div class="modal-buttons">
-                <button id="print-press-review-btn">Stampa</button>
+                <button id="print-press-review-btn">Stampa PDF</button>
+                <button id="generate-epub-btn">Genera EPUB</button>
                 <button id="save-press-review-btn">Salva Rassegna</button>
                 <button id="close-press-review-btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal per visualizzare le rassegne salvate -->
+    <div id="view-review-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" id="close-view-review">&times;</span>
+                <h2>Visualizza Rassegna Stampa</h2>
+            </div>
+            <div id="view-review-content">
+                <!-- Il contenuto della rassegna salvata verrà inserito qui dinamicamente -->
+            </div>
+            <div class="modal-buttons">
+                <button id="print-saved-review-btn">Stampa PDF</button>
+                <button id="generate-saved-epub-btn">Genera EPUB</button>
+                <button id="close-view-review-btn">Chiudi</button>
             </div>
         </div>
     </div>
@@ -635,6 +717,9 @@
                 
                 savedPressReviews.push(reviewData);
                 saveReviewsToLocalStorage();
+                
+                // Aggiorna la visualizzazione delle rassegne salvate
+                updateSavedReviewsList();
                 
                 showStatus('success', 'Rassegna stampa salvata con successo!');
                 pressReviewModal.style.display = 'none';
@@ -1380,8 +1465,258 @@
                 contentField.value = '';
             }
             
+            // Modal per visualizzare le rassegne salvate
+            const viewReviewModal = document.getElementById('view-review-modal');
+            const closeViewReview = document.getElementById('close-view-review');
+            const viewReviewContent = document.getElementById('view-review-content');
+            const printSavedReviewBtn = document.getElementById('print-saved-review-btn');
+            const generateSavedEpubBtn = document.getElementById('generate-saved-epub-btn');
+            const closeViewReviewBtn = document.getElementById('close-view-review-btn');
+            
+            // Chiusura del modal di visualizzazione rassegna
+            closeViewReview.addEventListener('click', function() {
+                viewReviewModal.style.display = 'none';
+            });
+            
+            closeViewReviewBtn.addEventListener('click', function() {
+                viewReviewModal.style.display = 'none';
+            });
+            
+            // Stampa della rassegna salvata
+            printSavedReviewBtn.addEventListener('click', function() {
+                // Rimuove temporaneamente i bordi del modal per la stampa
+                const modalContent = viewReviewModal.querySelector('.modal-content');
+                const originalBorder = modalContent.style.border;
+                modalContent.style.border = 'none';
+                
+                // Nasconde le barre di scorrimento
+                document.body.style.overflow = 'hidden';
+                modalContent.style.overflow = 'hidden';
+                
+                // Usa la funzione di stampa del browser
+                window.print();
+                
+                // Ripristina i bordi e le barre di scorrimento
+                setTimeout(() => {
+                    modalContent.style.border = originalBorder;
+                    document.body.style.overflow = '';
+                    modalContent.style.overflow = 'auto';
+                }, 1000);
+            });
+            
+            // Generazione EPUB dalla rassegna salvata
+            generateSavedEpubBtn.addEventListener('click', function() {
+                // Recupera l'ID della rassegna corrente
+                const reviewId = viewReviewContent.dataset.reviewId;
+                if (!reviewId) return;
+                
+                const review = savedPressReviews.find(r => r.id === reviewId);
+                if (!review) return;
+                
+                // Recupera gli articoli associati a questa rassegna
+                const reviewArticles = [];
+                review.articles.forEach(articleId => {
+                    const article = savedArticles.find(a => a.id === articleId);
+                    if (article) reviewArticles.push(article);
+                });
+                
+                generateEpub(reviewArticles, review.title);
+            });
+            
+            // Genera EPUB dagli articoli
+            function generateEpub(articles, title) {
+                if (!articles || articles.length === 0) {
+                    showStatus('error', 'Nessun articolo disponibile per generare l\'EPUB.');
+                    return;
+                }
+                
+                // Crea l'indice degli articoli
+                let tocHtml = '<h1>Indice</h1>\n<ul>\n';
+                for (let i = 0; i < articles.length; i++) {
+                    tocHtml += `<li><a href="#article-${i}">${articles[i].title}</a></li>\n`;
+                }
+                tocHtml += '</ul>';
+                
+                // Crea il contenuto degli articoli
+                let contentHtml = '';
+                for (let i = 0; i < articles.length; i++) {
+                    const article = articles[i];
+                    contentHtml += `<h1 id="article-${i}">${article.title}</h1>\n`;
+                    
+                    if (article.sourceName) {
+                        contentHtml += `<p class="source"><em>Fonte: ${article.sourceName}</em></p>\n`;
+                    }
+                    
+                    if (article.author) {
+                        contentHtml += `<p class="author"><strong>${article.author}</strong></p>\n`;
+                    }
+                    
+                    // Formatta il contenuto
+                    let formattedContent = article.content;
+                    if (!formattedContent.includes('<p>')) {
+                        formattedContent = article.content.split('\n\n')
+                            .map(p => p.trim())
+                            .filter(p => p.length > 0)
+                            .map(p => `<p>${p}</p>`)
+                            .join('\n');
+                    }
+                    
+                    contentHtml += formattedContent + '\n<hr>\n';
+                }
+                
+                // Crea il contenuto completo dell'EPUB
+                const epubContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+    <meta charset="UTF-8" />
+    <title>${title}</title>
+    <style>
+        body { 
+            font-family: serif; 
+            margin: 2em; 
+            line-height: 1.5;
+        }
+        h1 { 
+            font-size: 1.5em; 
+            margin: 1em 0 0.5em 0; 
+        }
+        .source { 
+            font-style: italic; 
+            margin: 0.5em 0; 
+        }
+        .author { 
+            font-weight: bold; 
+            margin: 0.5em 0 1em 0; 
+        }
+        hr { 
+            margin: 2em 0; 
+            border: none; 
+            border-top: 1px solid #ccc; 
+        }
+    </style>
+</head>
+<body>
+    <div id="toc">
+        ${tocHtml}
+    </div>
+    <div id="content">
+        ${contentHtml}
+    </div>
+</body>
+</html>`;
+                
+                // Crea un oggetto Blob per l'EPUB
+                const blob = new Blob([epubContent], { type: 'application/epub+zip' });
+                
+                // Crea un URL per il blob
+                const url = URL.createObjectURL(blob);
+                
+                // Crea un link per scaricare il file
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.epub`;
+                document.body.appendChild(link);
+                link.click();
+                
+                // Pulizia
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showStatus('success', 'EPUB generato con successo! Il download dovrebbe iniziare automaticamente.');
+            }
+            
+            // Funzione per aggiornare la lista delle rassegne salvate
+            function updateSavedReviewsList() {
+                const savedReviewsContainer = document.getElementById('saved-reviews-container');
+                const savedReviewsBody = document.getElementById('saved-reviews-body');
+                
+                // Mostra il container delle rassegne salvate se ci sono rassegne
+                if (savedPressReviews && savedPressReviews.length > 0) {
+                    savedReviewsContainer.style.display = 'block';
+                    
+                    // Pulisci la tabella
+                    savedReviewsBody.innerHTML = '';
+                    
+                    // Ordina le rassegne per data (più recenti prima)
+                    const sortedReviews = [...savedPressReviews].sort((a, b) => 
+                        new Date(b.date) - new Date(a.date)
+                    );
+                    
+                    // Aggiungi le righe per ogni rassegna
+                    sortedReviews.forEach(review => {
+                        const row = document.createElement('tr');
+                        
+                        const titleCell = document.createElement('td');
+                        titleCell.textContent = review.title;
+                        row.appendChild(titleCell);
+                        
+                        const dateCell = document.createElement('td');
+                        dateCell.textContent = new Date(review.date).toLocaleDateString('it-IT');
+                        row.appendChild(dateCell);
+                        
+                        const articlesCountCell = document.createElement('td');
+                        articlesCountCell.textContent = review.articles ? review.articles.length : 0;
+                        row.appendChild(articlesCountCell);
+                        
+                        const actionsCell = document.createElement('td');
+                        actionsCell.className = 'action-cell';
+                        
+                        // Pulsante Visualizza
+                        const viewBtn = document.createElement('button');
+                        viewBtn.textContent = 'Visualizza';
+                        viewBtn.style.backgroundColor = '#2196F3';
+                        viewBtn.addEventListener('click', () => viewReview(review.id));
+                        actionsCell.appendChild(viewBtn);
+                        
+                        // Pulsante Elimina
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Elimina';
+                        deleteBtn.style.backgroundColor = '#f44336';
+                        deleteBtn.addEventListener('click', () => deleteReview(review.id));
+                        actionsCell.appendChild(deleteBtn);
+                        
+                        row.appendChild(actionsCell);
+                        
+                        savedReviewsBody.appendChild(row);
+                    });
+                } else {
+                    savedReviewsContainer.style.display = 'none';
+                }
+            }
+            
+            // Funzione per visualizzare una rassegna salvata
+            function viewReview(reviewId) {
+                const review = savedPressReviews.find(r => r.id === reviewId);
+                if (!review) return;
+                
+                // Imposta il contenuto nel modal
+                viewReviewContent.innerHTML = review.htmlContent;
+                viewReviewContent.dataset.reviewId = reviewId;
+                
+                // Mostra il modal
+                viewReviewModal.style.display = 'block';
+            }
+            
+            // Funzione per eliminare una rassegna
+            function deleteReview(reviewId) {
+                if (confirm('Sei sicuro di voler eliminare questa rassegna stampa?')) {
+                    // Rimuovi la rassegna dall'array
+                    savedPressReviews = savedPressReviews.filter(r => r.id !== reviewId);
+                    
+                    // Aggiorna il localStorage
+                    saveReviewsToLocalStorage();
+                    
+                    // Aggiorna la tabella
+                    updateSavedReviewsList();
+                    
+                    showStatus('success', 'Rassegna stampa eliminata con successo.');
+                }
+            }
+            
             // Inizializza la pagina
             updateSavedArticlesTable();
+            updateSavedReviewsList();
         });
     </script>
 </body>
