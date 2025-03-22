@@ -249,18 +249,12 @@
             padding: 20px;
             margin-top: 20px;
         }
-
-#press-review-content .press-review-articles, 
-#view-review-content .press-review-articles {
-    margin-top: 10px;
-} 
         .press-review-header {
             text-align: center;
             border-bottom: 2px solid black;
-            margin-bottom: 0 !important;
-    padding-bottom: 5px !important;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
-
         .press-review-title {
             font-size: 28px;
             font-weight: bold;
@@ -277,19 +271,9 @@
             hyphens: auto;
         }
         .press-review-article {
-    break-inside: avoid;
-    margin-bottom: 20px;
-    position: relative;
-}
-
-.press-review-article:not(:last-child)::after {
-    content: "";
-    display: block;
-    width: 50%;
-    height: 1px;
-    background-color: #000;
-    margin: 20px auto;
-}
+            break-inside: avoid;
+            margin-bottom: 20px;
+        }
         .article-title {
             font-size: 18px;
             font-weight: bold;
@@ -310,14 +294,12 @@
             text-indent: 20px;
         }
         .article-content p:first-of-type:first-letter {
-    font-size: 36px;
-    font-weight: bold;
-    float: left;
-    margin-right: 6px;
-    line-height: 0.8;
-    padding-top: 2px;
-    height: 36px;
-}
+            font-size: 22px;
+            font-weight: bold;
+            float: left;
+            margin-right: 4px;
+            line-height: 1;
+        }
         .article-content p {
             word-spacing: normal !important;
             letter-spacing: normal !important;
@@ -1274,30 +1256,11 @@
             }
             
             // Funzione per formattare l'articolo per la rassegna
-function formatArticleForReview(content) {
-    // Se il contenuto è già in HTML, mantienilo come tale
-    if (content.includes('<p>') || content.includes('<h')) {
-        return content;
-    }
-    
-    // Dividi in paragrafi
-    const paragraphs = content.split('\n\n')
-        .map(paragraph => paragraph.trim())
-        .filter(paragraph => paragraph.length > 0);
-    
-    // Assicurati che ci sia almeno un paragrafo
-    if (paragraphs.length === 0) return '<p></p>';
-    
-    // Formatta il primo paragrafo per il capolettera
-    let formattedContent = `<p>${paragraphs[0]}</p>`;
-    
-    // Aggiungi i restanti paragrafi
-    for (let i = 1; i < paragraphs.length; i++) {
-        formattedContent += `<p>${paragraphs[i]}</p>`;
-    }
-    
-    return formattedContent;
-}
+            function formatArticleForReview(content) {
+                // Se il contenuto è già in HTML, mantienilo come tale
+                if (content.includes('<p>') || content.includes('<h')) {
+                    return content;
+                }
                 
                 // Altrimenti, converti le interruzioni di riga in paragrafi
                 return content.split('\n\n')
