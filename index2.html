@@ -401,8 +401,8 @@
     <h1>Fattariellows of the day</h1>
     
     <div class="tabs">
-        <button class="tab-button active" data-tab="url-tab">Estrai da URL</button>
-        <button class="tab-button" data-tab="manual-tab">Inserimento Manuale</button>
+        <button class="tab-button active" onclick="openTab(event, 'url-tab')">Estrai da URL</button>
+        <button class="tab-button" onclick="openTab(event, 'manual-tab')">Inserimento Manuale</button>
     </div>
     
     <div id="url-tab" class="tab-content" style="display: block;">
@@ -657,6 +657,7 @@
             
             // Event listener per l'estrazione dell'articolo
             extractButton.addEventListener('click', function() {
+                console.log("Estrazione avviata");
                 const url = urlInput.value.trim();
                 
                 if (!url) {
