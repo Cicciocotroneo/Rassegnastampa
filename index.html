@@ -237,22 +237,11 @@
             .modal-header, .modal-buttons {
                 display: none !important;
             }
-            .modal-content {
-                border: none !important;
-                box-shadow: none !important;
-            }
-            html, body {
-                overflow: visible !important;
-                height: auto !important;
-            }
-            ::-webkit-scrollbar {
-                display: none !important;
-            }
         }
         
         #press-review-content {
             background-color: white;
-            font-family: 'Times New Roman', Times, serif !important;
+            font-family: 'Times New Roman', Times, serif;
             padding: 20px;
             margin-top: 20px;
         }
@@ -266,19 +255,16 @@
             font-size: 28px;
             font-weight: bold;
             margin-bottom: 5px;
-            font-family: 'Times New Roman', Times, serif !important;
         }
         .press-review-date {
             font-size: 16px;
             margin-bottom: 10px;
-            font-family: 'Times New Roman', Times, serif !important;
         }
         .press-review-articles {
             column-count: 2;
             column-gap: 20px;
             text-align: justify;
             hyphens: auto;
-            font-family: 'Times New Roman', Times, serif !important;
         }
         .press-review-article {
             break-inside: avoid;
@@ -442,6 +428,7 @@
             </div>
             <div class="modal-buttons">
                 <button id="print-press-review-btn">Stampa PDF</button>
+                <button id="generate-epub-btn">Genera EPUB</button>
                 <button id="save-press-review-btn">Salva Rassegna</button>
                 <button id="close-press-review-btn">Chiudi</button>
             </div>
@@ -460,6 +447,7 @@
             </div>
             <div class="modal-buttons">
                 <button id="print-saved-review-btn">Stampa PDF</button>
+                <button id="generate-saved-epub-btn">Genera EPUB</button>
                 <button id="close-view-review-btn">Chiudi</button>
             </div>
         </div>
@@ -818,9 +806,6 @@
                 }
                 if (event.target === importExportModal) {
                     importExportModal.style.display = 'none';
-                }
-                if (event.target === viewReviewModal) {
-                    viewReviewModal.style.display = 'none';
                 }
             });
             
@@ -1252,10 +1237,10 @@
                 savedArticles.forEach(article => {
                     reviewHTML += `
                         <div class="press-review-article">
-                            <div class="article-title" style="font-family: 'Times New Roman', Times, serif;">${article.title}</div>
-                            <div class="article-source" style="font-family: 'Times New Roman', Times, serif;">${article.sourceName || 'Fonte sconosciuta'}</div>
-                            ${article.author ? `<div class="article-author" style="font-family: 'Times New Roman', Times, serif;">${article.author}</div>` : ''}
-                            <div class="article-content" style="font-family: 'Times New Roman', Times, serif;">
+                            <div class="article-title">${article.title}</div>
+                            <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
+                            ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
+                            <div class="article-content">
                                 ${formatArticleForReview(article.content)}
                             </div>
                         </div>
@@ -1279,7 +1264,7 @@
                 return content.split('\n\n')
                     .map(paragraph => paragraph.trim())
                     .filter(paragraph => paragraph.length > 0)
-                    .map(paragraph => `<p style="font-family: 'Times New Roman', Times, serif;">${paragraph}</p>`)
+                    .map(paragraph => `<p>${paragraph}</p>`)
                     .join('');
             }
             
@@ -1480,19 +1465,12 @@
                 contentField.value = '';
             }
             
-            // Variabili globali del modal
-            const pressReviewModal = document.getElementById('press-review-modal');
-            const closePressReview = document.getElementById('close-press-review');
-            const pressReviewContent = document.getElementById('press-review-content');
-            const printPressReviewBtn = document.getElementById('print-press-review-btn');
-            const savePressReviewBtn = document.getElementById('save-press-review-btn');
-            const closePressReviewBtn = document.getElementById('close-press-review-btn');
-            
             // Modal per visualizzare le rassegne salvate
             const viewReviewModal = document.getElementById('view-review-modal');
             const closeViewReview = document.getElementById('close-view-review');
             const viewReviewContent = document.getElementById('view-review-content');
             const printSavedReviewBtn = document.getElementById('print-saved-review-btn');
+            const generateSavedEpubBtn = document.getElementById('generate-saved-epub-btn');
             const closeViewReviewBtn = document.getElementById('close-view-review-btn');
             
             // Chiusura del modal di visualizzazione rassegna
@@ -1506,16 +1484,43 @@
             
             // Stampa della rassegna salvata
             printSavedReviewBtn.addEventListener('click', function() {
-                // Prepara il contenuto per la stampa
-                preparePrintView();
+                // Rimuove temporaneamente i bordi del modal per la stampa
+                const modalContent = viewReviewModal.querySelector('.modal-content');
+                const originalBorder = modalContent.style.border;
+                modalContent.style.border = 'none';
+                
+                // Nasconde le barre di scorrimento
+                document.body.style.overflow = 'hidden';
+                modalContent.style.overflow = 'hidden';
                 
                 // Usa la funzione di stampa del browser
                 window.print();
                 
-                // Ripristina la visualizzazione normale
+                // Ripristina i bordi e le barre di scorrimento
                 setTimeout(() => {
-                    resetPrintView();
+                    modalContent.style.border = originalBorder;
+                    document.body.style.overflow = '';
+                    modalContent.style.overflow = 'auto';
                 }, 1000);
+            });
+            
+            // Generazione EPUB dalla rassegna salvata
+            generateSavedEpubBtn.addEventListener('click', function() {
+                // Recupera l'ID della rassegna corrente
+                const reviewId = viewReviewContent.dataset.reviewId;
+                if (!reviewId) return;
+                
+                const review = savedPressReviews.find(r => r.id === reviewId);
+                if (!review) return;
+                
+                // Recupera gli articoli associati a questa rassegna
+                const reviewArticles = [];
+                review.articles.forEach(articleId => {
+                    const article = savedArticles.find(a => a.id === articleId);
+                    if (article) reviewArticles.push(article);
+                });
+                
+                generateEpub(reviewArticles, review.title);
             });
             
             // Genera EPUB dagli articoli
@@ -1688,12 +1693,6 @@
                 // Imposta il contenuto nel modal
                 viewReviewContent.innerHTML = review.htmlContent;
                 viewReviewContent.dataset.reviewId = reviewId;
-                
-                // Applica il font serif a tutti gli elementi
-                const elements = viewReviewContent.querySelectorAll('*');
-                elements.forEach(el => {
-                    el.style.fontFamily = "'Times New Roman', Times, serif";
-                });
                 
                 // Mostra il modal
                 viewReviewModal.style.display = 'block';
