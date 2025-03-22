@@ -257,15 +257,7 @@
         margin-top: 0; /* Rimuovi il margine superiore */
     }
 
-              .press-review-article:not(:last-child)::after {
-        content: '';
-        display: block;
-        width: 40%;
-        height: 1px;
-        background-color: #999;
-        margin: 15px auto;
-        break-inside: avoid; /* Evita interruzioni di pagina */
-    }
+   
     
     .modal-content {
         border: none !important; /* Rimuove il bordo durante la stampa per mobile */
@@ -295,6 +287,16 @@
     hyphens: auto;
     margin-top: 5px;
 }
+        .press-review-article::after {
+        content: '';
+        display: block;
+        width: 40%;
+        height: 1px;
+        background-color: #999;
+        margin: 15px auto;
+        break-inside: avoid;
+        page-break-inside: avoid;
+            } 
  /* Aggiungi una riga orizzontale tra gli articoli */
    /* .press-review-article:not(:last-child)::after {
         content: '';
