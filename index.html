@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema di Rassegna Stampa</title>
+    <title>Fattariellows of the day</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -346,7 +346,7 @@
     </style>
 </head>
 <body>
-    <h1>Sistema di Rassegna Stampa</h1>
+    <h1>Fattariellows of the day</h1>
     
     <div class="form-container">
         <input type="url" id="url-input" placeholder="Inserisci l'URL dell'articolo..." required>
@@ -721,7 +721,7 @@
                 // Salva la rassegna attuale
                 const currentDate = new Date();
                 const reviewId = generateUniqueId();
-                const reviewTitle = `Rassegna Stampa ${formatDate(currentDate)}`;
+                const reviewTitle = `Fattariellows of the day ${formatDate(currentDate)}`;
                 
                 const reviewData = {
                     id: reviewId,
@@ -1243,7 +1243,7 @@
     // Crea l'intestazione della rassegna stampa
     let reviewHTML = `
         <div class="press-review-header">
-            <div class="press-review-title">Rassegna Stampa</div>
+            <div class="press-review-title">Fattariellows of the day</div>
             <div class="press-review-date">${formattedDate}</div>
         </div>
         <div class="press-review-articles">
