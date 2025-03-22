@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estrattore di Testo da Articoli Web</title>
+    <title>Estrattore Avanzato di Articoli Web</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
@@ -37,17 +37,34 @@
         button:hover {
             background-color: #45a049;
         }
-        #result {
+        #extraction-results {
+            display: none;
+            margin-top: 20px;
+        }
+        .field-container {
+            margin-bottom: 20px;
+        }
+        .field-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
             border: 1px solid #ddd;
-            padding: 15px;
             border-radius: 4px;
-            min-height: 100px;
-            max-height: 400px;
-            overflow-y: auto;
-            background-color: #f9f9f9;
+        }
+        textarea {
+            min-height: 300px;
+            resize: vertical;
         }
         .error {
             color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
             font-weight: bold;
         }
         .loading {
@@ -55,36 +72,106 @@
             font-style: italic;
             color: #666;
         }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .info-text {
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        #copy-all-btn {
+            background-color: #2196F3;
+        }
+        #copy-all-btn:hover {
+            background-color: #0b7dda;
+        }
+        #test-extraction-btn {
+            background-color: #ff9800;
+        }
+        #test-extraction-btn:hover {
+            background-color: #e68a00;
+        }
+        #status-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
-    <h1>Estrattore di Testo da Articoli Web</h1>
+    <h1>Estrattore Avanzato di Articoli Web</h1>
     
     <div class="form-container">
         <input type="url" id="url-input" placeholder="Inserisci l'URL dell'articolo..." required>
-        <button id="extract-button">Estrai Testo</button>
+        <button id="extract-button">Estrai Articolo</button>
     </div>
     
-    <div id="result">
-        <p>Il testo estratto dall'articolo apparirà qui.</p>
+    <div id="status-message"></div>
+    
+    <div id="extraction-results">
+        <div class="field-container">
+            <label class="field-label" for="title-field">Titolo:</label>
+            <input type="text" id="title-field">
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="author-field">Autore:</label>
+            <input type="text" id="author-field">
+            <div class="info-text">Potrebbe non essere sempre rilevabile</div>
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="url-field">URL:</label>
+            <input type="text" id="url-field" readonly>
+        </div>
+        
+        <div class="field-container">
+            <label class="field-label" for="content-field">Contenuto dell'Articolo:</label>
+            <textarea id="content-field"></textarea>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="test-extraction-btn">Testa Estrazione</button>
+            <button id="copy-all-btn">Copia Tutto</button>
+        </div>
+        
+        <div id="test-results" class="test-results" style="display: none;"></div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const urlInput = document.getElementById('url-input');
             const extractButton = document.getElementById('extract-button');
-            const resultContainer = document.getElementById('result');
+            const extractionResults = document.getElementById('extraction-results');
+            const statusMessage = document.getElementById('status-message');
+            const titleField = document.getElementById('title-field');
+            const authorField = document.getElementById('author-field');
+            const urlField = document.getElementById('url-field');
+            const contentField = document.getElementById('content-field');
+            const testExtractionBtn = document.getElementById('test-extraction-btn');
+            const copyAllBtn = document.getElementById('copy-all-btn');
+            const testResults = document.getElementById('test-results');
             
             extractButton.addEventListener('click', function() {
                 const url = urlInput.value.trim();
                 
                 if (!url) {
-                    resultContainer.innerHTML = '<p class="error">Per favore, inserisci un URL valido.</p>';
+                    showStatus('error', 'Per favore, inserisci un URL valido.');
                     return;
                 }
                 
-                // Mostra lo stato di caricamento
-                resultContainer.innerHTML = '<p class="loading">Estrazione in corso...</p>';
+                // Nascondi i risultati precedenti e mostra lo stato di caricamento
+                extractionResults.style.display = 'none';
+                showStatus('loading', 'Estrazione in corso...');
                 
                 // Utilizziamo un proxy CORS per aggirare le restrizioni di sicurezza
                 const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
@@ -101,86 +188,278 @@
                         const tempEl = document.createElement('div');
                         tempEl.innerHTML = data.contents;
                         
-                        // Tenta di estrarre il contenuto dell'articolo
-                        let articleText = extractArticleContent(tempEl);
+                        // Estrai le informazioni dell'articolo
+                        const articleInfo = extractArticleInfo(tempEl, url);
                         
-                        if (articleText.trim() === '') {
-                            resultContainer.innerHTML = '<p class="error">Nessun contenuto di articolo identificabile trovato.</p>';
-                        } else {
-                            resultContainer.innerHTML = articleText;
-                        }
+                        // Popola i campi
+                        titleField.value = articleInfo.title;
+                        authorField.value = articleInfo.author;
+                        urlField.value = url;
+                        contentField.value = articleInfo.rawContent; // Contenuto testuale senza formattazione HTML
+                        
+                        // Mostra i risultati e nascondi lo stato di caricamento
+                        extractionResults.style.display = 'block';
+                        showStatus('success', 'Estrazione completata! Puoi modificare i campi qui sotto.');
+                        
+                        // Nascondi eventuali risultati di test precedenti
+                        testResults.style.display = 'none';
                     })
                     .catch(error => {
-                        resultContainer.innerHTML = `<p class="error">Errore: ${error.message}</p>`;
+                        showStatus('error', `Errore: ${error.message}`);
                     });
             });
             
+            testExtractionBtn.addEventListener('click', function() {
+                // Mostra i dati estratti in formato leggibile
+                testResults.innerHTML = `
+                    <h3>Test Risultati Estrazione:</h3>
+                    <p><strong>Titolo:</strong> ${titleField.value}</p>
+                    <p><strong>Autore:</strong> ${authorField.value || 'Non rilevato'}</p>
+                    <p><strong>URL:</strong> ${urlField.value}</p>
+                    <div><strong>Contenuto:</strong> 
+                        <div style="white-space: pre-line; max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; margin-top: 10px;">
+                            ${contentField.value}
+                        </div>
+                    </div>
+                `;
+                testResults.style.display = 'block';
+            });
+            
+            copyAllBtn.addEventListener('click', function() {
+                // Prepara il testo da copiare
+                const textToCopy = `Titolo: ${titleField.value}
+Autore: ${authorField.value}
+URL: ${urlField.value}
+
+${contentField.value}`;
+                
+                // Copia negli appunti
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        showStatus('success', 'Testo copiato negli appunti!');
+                        setTimeout(() => {
+                            statusMessage.textContent = '';
+                            statusMessage.className = '';
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        showStatus('error', 'Errore durante la copia: ' + err);
+                    });
+            });
+            
+            function showStatus(type, message) {
+                statusMessage.textContent = message;
+                statusMessage.className = '';
+                
+                if (type === 'error') {
+                    statusMessage.classList.add('error');
+                } else if (type === 'success') {
+                    statusMessage.classList.add('success');
+                } else if (type === 'loading') {
+                    statusMessage.classList.add('loading');
+                }
+            }
+            
+            function extractArticleInfo(domElement, url) {
+                // Oggetto che conterrà tutte le informazioni estratte
+                const articleInfo = {
+                    title: '',
+                    author: '',
+                    content: '',
+                    rawContent: ''
+                };
+                
+                // Estrai il titolo
+                articleInfo.title = extractTitle(domElement);
+                
+                // Estrai l'autore
+                articleInfo.author = extractAuthor(domElement);
+                
+                // Estrai il contenuto dell'articolo
+                const contentResult = extractArticleContent(domElement);
+                articleInfo.content = contentResult.formattedContent;
+                articleInfo.rawContent = contentResult.rawContent;
+                
+                return articleInfo;
+            }
+            
+            function extractTitle(domElement) {
+                // Strategia 1: Cerca il tag title
+                const titleTag = domElement.querySelector('title');
+                if (titleTag && titleTag.textContent.trim()) {
+                    // Pulisci il titolo (rimuovi il nome del sito se presente)
+                    let title = titleTag.textContent.trim();
+                    // Rimuovi parti comuni alla fine del titolo come " | Nome del sito"
+                    title = title.split(/\s[|\-–—]\s/)[0];
+                    return title;
+                }
+                
+                // Strategia 2: Cerca l'elemento h1
+                const h1Tags = domElement.querySelectorAll('h1');
+                if (h1Tags.length > 0) {
+                    // Prendi l'h1 più lungo come probabile titolo
+                    let longestH1 = '';
+                    for (const h1 of h1Tags) {
+                        const text = h1.textContent.trim();
+                        if (text.length > longestH1.length) {
+                            longestH1 = text;
+                        }
+                    }
+                    if (longestH1) return longestH1;
+                }
+                
+                // Strategia 3: Cerca meta tags
+                const metaTitleTag = domElement.querySelector('meta[property="og:title"], meta[name="twitter:title"]');
+                if (metaTitleTag && metaTitleTag.getAttribute('content')) {
+                    return metaTitleTag.getAttribute('content').trim();
+                }
+                
+                // Strategia 4: Cerca elementi con classe o id che contengono "title"
+                const titleElements = domElement.querySelectorAll('[class*="title"], [id*="title"], .headline, .heading');
+                if (titleElements.length > 0) {
+                    for (const el of titleElements) {
+                        const text = el.textContent.trim();
+                        if (text.length > 10 && text.length < 200) {
+                            return text;
+                        }
+                    }
+                }
+                
+                return 'Titolo non trovato';
+            }
+            
+            function extractAuthor(domElement) {
+                // Strategia 1: Cerca meta tags per l'autore
+                const metaAuthorTag = domElement.querySelector('meta[name="author"], meta[property="article:author"], meta[name="twitter:creator"]');
+                if (metaAuthorTag && metaAuthorTag.getAttribute('content')) {
+                    return metaAuthorTag.getAttribute('content').trim();
+                }
+                
+                // Strategia 2: Cerca elementi con classe o id che contengono "author"
+                const authorSelectors = [
+                    '[class*="author"]', 
+                    '[id*="author"]', 
+                    '[rel="author"]',
+                    '.byline',
+                    '.writer',
+                    '[class*="byline"]',
+                    '[class*="by-"]'
+                ];
+                
+                const authorElements = domElement.querySelectorAll(authorSelectors.join(', '));
+                if (authorElements.length > 0) {
+                    for (const el of authorElements) {
+                        const text = el.textContent.trim();
+                        // Evita testi troppo lunghi o troppo corti
+                        if (text.length > 3 && text.length < 100) {
+                            // Cerca di pulire il testo (rimuovere "By", "Author:", ecc.)
+                            let cleanedText = text.replace(/^(by|author|written by|posted by)[\s:]+/i, '').trim();
+                            // Se il testo è ancora valido, restituiscilo
+                            if (cleanedText.length > 3) {
+                                return cleanedText;
+                            }
+                        }
+                    }
+                }
+                
+                // Strategia 3: Cerca schemi strutturati (Schema.org)
+                const personElements = domElement.querySelectorAll('[itemtype*="schema.org/Person"]');
+                if (personElements.length > 0) {
+                    for (const el of personElements) {
+                        const nameEl = el.querySelector('[itemprop="name"]');
+                        if (nameEl && nameEl.textContent.trim()) {
+                            return nameEl.textContent.trim();
+                        }
+                    }
+                }
+                
+                return '';
+            }
+            
             function extractArticleContent(domElement) {
+                // Risultato dell'estrazione
+                const result = {
+                    formattedContent: '',
+                    rawContent: ''
+                };
+                
                 // Strategia 1: Cerca elementi con tag semantici per articoli
-                let content = '';
+                let contentElement = null;
                 
                 // Cerca l'elemento article
                 const articleElements = domElement.querySelectorAll('article');
                 if (articleElements.length > 0) {
-                    // Prendi il primo elemento article
-                    const mainArticle = articleElements[0];
-                    content = cleanAndFormatContent(mainArticle);
-                    if (content.trim().length > 100) {
-                        return content;
-                    }
-                }
-                
-                // Strategia 2: Cerca contenuto nella sezione principale
-                const mainElements = domElement.querySelectorAll('main');
-                if (mainElements.length > 0) {
-                    const mainContent = mainElements[0];
-                    content = cleanAndFormatContent(mainContent);
-                    if (content.trim().length > 100) {
-                        return content;
-                    }
-                }
-                
-                // Strategia 3: Cerca div con classi o ID comuni per articoli
-                const potentialArticleContainers = domElement.querySelectorAll('div[class*="article"], div[class*="content"], div[class*="post"], div[id*="article"], div[id*="content"], div[id*="post"]');
-                if (potentialArticleContainers.length > 0) {
-                    // Prendi il container più grande che è probabile contenga l'articolo
-                    let largestContainer = potentialArticleContainers[0];
-                    let maxLength = largestContainer.textContent.length;
+                    // Prendi l'elemento article più grande
+                    let largestArticle = articleElements[0];
+                    let maxLength = articleElements[0].textContent.length;
                     
-                    for (let i = 1; i < potentialArticleContainers.length; i++) {
-                        const currentLength = potentialArticleContainers[i].textContent.length;
-                        if (currentLength > maxLength) {
-                            maxLength = currentLength;
-                            largestContainer = potentialArticleContainers[i];
+                    for (let i = 1; i < articleElements.length; i++) {
+                        const length = articleElements[i].textContent.length;
+                        if (length > maxLength) {
+                            maxLength = length;
+                            largestArticle = articleElements[i];
                         }
                     }
                     
-                    content = cleanAndFormatContent(largestContainer);
-                    if (content.trim().length > 100) {
-                        return content;
+                    contentElement = largestArticle;
+                }
+                
+                // Se non è stato trovato un elemento article valido, cerca nella sezione principale
+                if (!contentElement || contentElement.textContent.trim().length < 100) {
+                    const mainElements = domElement.querySelectorAll('main');
+                    if (mainElements.length > 0) {
+                        contentElement = mainElements[0];
                     }
                 }
                 
-                // Strategia 4: Cerca paragrafi lunghi
+                // Se non è stato trovato né article né main, cerca div con classi o ID comuni per articoli
+                if (!contentElement || contentElement.textContent.trim().length < 100) {
+                    const potentialContainers = domElement.querySelectorAll('div[class*="article"], div[class*="content"], div[class*="post"], div[id*="article"], div[id*="content"], div[id*="post"], [itemprop="articleBody"]');
+                    if (potentialContainers.length > 0) {
+                        // Prendi il container più grande che è probabile contenga l'articolo
+                        let largestContainer = potentialContainers[0];
+                        let maxLength = largestContainer.textContent.length;
+                        
+                        for (let i = 1; i < potentialContainers.length; i++) {
+                            const currentLength = potentialContainers[i].textContent.length;
+                            if (currentLength > maxLength) {
+                                maxLength = currentLength;
+                                largestContainer = potentialContainers[i];
+                            }
+                        }
+                        
+                        contentElement = largestContainer;
+                    }
+                }
+                
+                // Se abbiamo trovato un elemento di contenuto, estraiamo il testo
+                if (contentElement && contentElement.textContent.trim().length > 100) {
+                    result.formattedContent = cleanAndFormatContent(contentElement);
+                    result.rawContent = extractRawText(contentElement);
+                    return result;
+                }
+                
+                // Strategia 4: Come ultima risorsa, cerca paragrafi lunghi
                 const paragraphs = domElement.querySelectorAll('p');
                 if (paragraphs.length > 0) {
                     // Filtra i paragrafi che sono probabilmente parte dell'articolo
                     const contentParagraphs = Array.from(paragraphs).filter(p => {
                         const text = p.textContent.trim();
-                        return text.length > 50 && text.split(' ').length > 10;
+                        return text.length > 80 && text.split(' ').length > 15;
                     });
                     
                     if (contentParagraphs.length > 0) {
-                        content = contentParagraphs.map(p => `<p>${p.textContent}</p>`).join('');
-                        return content;
+                        result.formattedContent = contentParagraphs.map(p => `<p>${p.textContent}</p>`).join('');
+                        result.rawContent = contentParagraphs.map(p => p.textContent).join('\n\n');
+                        return result;
                     }
                 }
                 
-                // Fallback: Ritorna tutto il contenuto testuale del corpo
-                return 'Nessun articolo identificato chiaramente. Ecco il testo della pagina:<br>' + 
-                       domElement.querySelector('body').textContent.trim()
-                       .replace(/[\n\r]+/g, '<br>')
-                       .replace(/\s{2,}/g, ' ');
+                // Fallback: Prendi tutto il testo del body
+                const bodyText = domElement.querySelector('body').textContent.trim();
+                result.formattedContent = 'Impossibile identificare chiaramente il contenuto dell\'articolo.';
+                result.rawContent = 'Impossibile identificare chiaramente il contenuto dell\'articolo.';
+                return result;
             }
             
             function cleanAndFormatContent(element) {
@@ -188,7 +467,12 @@
                 const clone = element.cloneNode(true);
                 
                 // Rimuovi elementi che non sono generalmente parte del contenuto
-                const elementsToRemove = ['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', '.comments', '.sidebar', '.ad', '.advertisement', '.banner'];
+                const elementsToRemove = [
+                    'script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 
+                    '.comments', '.sidebar', '.ad', '.advertisement', '.banner', '.share', '.social',
+                    '.related', '.recommended', 'figcaption', '.caption', '.newsletter'
+                ];
+                
                 elementsToRemove.forEach(selector => {
                     const elements = clone.querySelectorAll(selector);
                     elements.forEach(el => el.remove());
@@ -221,6 +505,50 @@
                 }
                 
                 return result;
+            }
+            
+            function extractRawText(element) {
+                // Clona l'elemento per non modificare l'originale
+                const clone = element.cloneNode(true);
+                
+                // Rimuovi elementi che non sono generalmente parte del contenuto
+                const elementsToRemove = [
+                    'script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'form', 
+                    '.comments', '.sidebar', '.ad', '.advertisement', '.banner', '.share', '.social',
+                    '.related', '.recommended', 'figcaption', '.caption', '.newsletter'
+                ];
+                
+                elementsToRemove.forEach(selector => {
+                    const elements = clone.querySelectorAll(selector);
+                    elements.forEach(el => el.remove());
+                });
+                
+                // Estrai paragrafi e titoli
+                const paragraphs = [];
+                const contentElements = clone.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+                
+                contentElements.forEach(el => {
+                    const tagName = el.tagName.toLowerCase();
+                    const text = el.textContent.trim();
+                    
+                    if (text.length > 0) {
+                        if (tagName.startsWith('h')) {
+                            // Aggiungi spazio extra per i titoli
+                            paragraphs.push(text + "\n");
+                        } else {
+                            paragraphs.push(text);
+                        }
+                    }
+                });
+                
+                // Se non ci sono elementi, prendi tutto il testo
+                if (paragraphs.length === 0) {
+                    return clone.textContent.trim()
+                        .replace(/[\n\r]+/g, '\n\n')
+                        .replace(/\s{2,}/g, ' ');
+                }
+                
+                return paragraphs.join('\n\n');
             }
         });
     </script>
