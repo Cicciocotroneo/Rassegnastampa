@@ -265,6 +265,8 @@
             position: relative;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .close-modal {
@@ -1421,7 +1423,7 @@
                 // Crea l'intestazione della rassegna stampa
                 let reviewHTML = `
                     <div class="press-review-header">
-                        <div class="press-review-title">Rassegna Stampa</div>
+                        <div class="press-review-title">Fattariellows of the day</div>
                         <div class="press-review-date">${formattedDate}</div>
                     </div>
                     <div class="press-review-articles">
@@ -1699,126 +1701,4 @@
         });
     </script>
 </body>
-</html>none';
-                showStatus('loading', 'Estrazione in corso...');
-                
-                // Utilizziamo un proxy CORS per aggirare le restrizioni di sicurezza
-                const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
-                
-                fetch(proxyUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Errore durante il recupero della pagina web');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        // Crea un elemento DOM temporaneo per analizzare l'HTML
-                        const tempEl = document.createElement('div');
-                        tempEl.innerHTML = data.contents;
-                        
-                        // Estrai le informazioni dell'articolo
-                        const articleInfo = extractArticleInfo(tempEl, url);
-                        
-                        // Popola i campi
-                        titleField.value = articleInfo.title;
-                        authorField.value = articleInfo.author;
-                        urlField.value = url;
-                        
-                        // Tenta di estrarre il nome della fonte dall'URL
-                        try {
-                            const hostname = new URL(url).hostname;
-                            const domainParts = hostname.split('.');
-                            if (domainParts.length >= 2) {
-                                const domain = domainParts[domainParts.length - 2];
-                                // Capitalizza il nome del dominio e rimuovi eventuali trattini
-                                sourceNameField.value = domain.charAt(0).toUpperCase() + 
-                                                     domain.slice(1).replace(/-/g, ' ');
-                            }
-                        } catch (e) {
-                            sourceNameField.value = '';
-                        }
-                        
-                        contentField.value = articleInfo.rawContent;
-                        
-                        // Resetta eventuali modifiche in corso
-                        currentEditArticle = null;
-                        
-                        // Mostra i risultati e nascondi lo stato di caricamento
-                        extractionResults.style.display = 'block';
-                        showStatus('success', 'Estrazione completata! Modifica i campi se necessario e salva l\'articolo.');
-                    })
-                    .catch(error => {
-                        showStatus('error', `Errore: ${error.message}`);
-                    });
-            });
-            
-            // Event listener per salvare l'articolo
-            saveArticleBtn.addEventListener('click', function() {
-                const title = titleField.value.trim();
-                const author = authorField.value.trim();
-                const url = urlField.value.trim();
-                const sourceName = sourceNameField.value.trim();
-                const content = contentField.value.trim();
-                
-                if (!title) {
-                    showStatus('error', 'Il titolo è obbligatorio.');
-                    return;
-                }
-                
-                if (!content) {
-                    showStatus('error', 'Il contenuto dell\'articolo è obbligatorio.');
-                    return;
-                }
-                
-                // Se stiamo modificando un articolo esistente
-                if (currentEditArticle) {
-                    const index = savedArticles.findIndex(article => article.id === currentEditArticle.id);
-                    if (index !== -1) {
-                        savedArticles[index] = {
-                            ...savedArticles[index],
-                            title,
-                            author,
-                            url,
-                            sourceName,
-                            content,
-                            modifiedDate: new Date().toISOString()
-                        };
-                        showStatus('success', 'Articolo aggiornato con successo!');
-                    }
-                } else {
-                    // Crea un nuovo articolo
-                    const newArticle = {
-                        id: generateUniqueId(),
-                        title,
-                        author,
-                        url,
-                        sourceName,
-                        content,
-                        createdDate: new Date().toISOString(),
-                        modifiedDate: new Date().toISOString()
-                    };
-                    
-                    savedArticles.push(newArticle);
-                    showStatus('success', 'Articolo salvato con successo!');
-                }
-                
-                // Salva gli articoli nel localStorage
-                saveArticlesToLocalStorage();
-                
-                // Aggiorna la tabella degli articoli
-                updateSavedArticlesTable();
-                
-                // Assicurati che la tab degli articoli sia visibile e attiva
-                document.querySelector('.tab[data-tab="articles"]').click();
-                
-                // Nascondi i risultati dell'estrazione
-                extractionResults.style.display = 'none';
-                
-                // Resetta i campi
-                resetExtractionFields();
-            });
-            
-            // Event listener per annullare l'estrazione
-            cancelExtractionBtn.addEventListener('click', function() {
-                extractionResults.style.display = '
+</html>
