@@ -352,7 +352,7 @@
     font-size: 12px !important;
     color: #666 !important;
     margin-top: 10px !important;
-    text-align: right !important;
+    text-align: left !important;
 }
 
 .article-url a {
@@ -1431,7 +1431,7 @@ function generatePressReview() {
         ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
         <div class="article-content">
             ${formatArticleForReview(article.content)}
-            ${article.url ? `<div class="article-url" style="font-size: 12px; color: #666; margin-top: 10px;">Fonte: <a href="${article.url}" target="_blank" style="color: #666; text-decoration: underline;">${article.url}</a></div>` : ''}
+           ${article.url ? `<div class="article-url" style="font-size: 12px; color: #666; margin-top: 10px;">Fonte: <a href="${article.url}" target="_blank" style="color: #666; text-decoration: underline;">${article.sourceName}</a></div>` : ''}
         </div>
             </div>
         `;
