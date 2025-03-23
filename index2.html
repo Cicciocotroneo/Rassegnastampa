@@ -278,6 +278,9 @@
         visibility: hidden;
         font-family: 'Times New Roman', Times, serif !important;
     }
+             #press-review-content, #press-review-content * {
+        visibility: visible;
+    }
     #press-review-modal, #press-review-modal * {
         visibility: visible;
     }
@@ -298,8 +301,16 @@
         margin: 0 !important;
         padding: 0 !important;
     }
-    .modal-header, .modal-buttons, .close-modal {
+    .modal-header, .modal-buttons, .close-modal, .modal-content {
         display: none !important;
+    }
+                #press-review-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
     }
     .press-review-header {
         page-break-after: avoid;
@@ -933,9 +944,28 @@ function resetManualInputFields() {
             });
             
             // Event listener per la stampa della rassegna
-            printPressReviewBtn.addEventListener('click', function() {
+           /* printPressReviewBtn.addEventListener('click', function() {
                 window.print();
             });
+            */
+
+    // Nascondi tutto tranne il contenuto della rassegna stampa
+    const originalContent = document.body.innerHTML;
+    const printContent = document.getElementById('press-review-content').innerHTML;
+
+    // Sostituisci il contenuto della pagina con quello da stampare
+    document.body.innerHTML = printContent;
+
+    // Avvia la stampa
+    window.print();
+
+    // Ripristina il contenuto originale della pagina
+    document.body.innerHTML = originalContent;
+
+    // Ricarica gli event listener (se necessario)
+    window.location.reload();
+});
+
             
             // Event listener per salvare la rassegna
             savePressReviewBtn.addEventListener('click', function() {
