@@ -1788,10 +1788,8 @@ function generatePressReview() {
             updateSavedArticlesTable();
             updateSavedReviewsList();
         });
-    </script>
 
-    <script>
-  if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then((registration) => {
         console.log('Service Worker registrato con successo:', registration);
@@ -1800,6 +1798,11 @@ function generatePressReview() {
         console.log('Registrazione del Service Worker fallita:', error);
       });
   }
+
+    </script>
+
+    <script>
+  
 </script>
 </body>
 </html>
