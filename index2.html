@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<!-- Collegamento al manifest.json -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Colore della barra degli strumenti (per mobile) -->
+<meta name="theme-color" content="#4CAF50">
+
+<!-- Icona per iOS -->
+<link rel="apple-touch-icon" href="icon-192x192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fattariellows of the day</title>
@@ -1768,5 +1776,17 @@ function generatePressReview() {
             updateSavedReviewsList();
         });
     </script>
+
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then((registration) => {
+        console.log('Service Worker registrato con successo:', registration);
+      })
+      .catch((error) => {
+        console.log('Registrazione del Service Worker fallita:', error);
+      });
+  }
+</script>
 </body>
 </html>
