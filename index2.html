@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+
+    <!-- Collegamento al manifest.json -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Colore della barra degli strumenti (per mobile) -->
+<meta name="theme-color" content="#4CAF50">
+
+<!-- Icona per iOS -->
+<link rel="apple-touch-icon" href="icon-192x192.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fattariellows of the day</title>
@@ -213,7 +222,7 @@
         }
         
         /* Stili per la visualizzazione della rassegna stampa */
-        @media print {
+       /* @media print {
             body * {
                 visibility: hidden;
                 font-family: 'Times New Roman', Times, serif !important;
@@ -249,20 +258,80 @@
             border-bottom: 2px solid black;
             padding-bottom: 5px;
             margin-bottom: 10px;
-    }
+    } */
     
-    .press-review-articles {
+/*    .press-review-articles {
         column-count: 2 !important; /* Forza il layout a due colonne per la stampa */
         column-gap: 20px;
         margin-top: 0; /* Rimuovi il margine superiore */
     }
 
-   
+   */
     
-    .modal-content {
+/*    .modal-content {
         border: none !important; /* Rimuove il bordo durante la stampa per mobile */
     }
-        }
+        } */
+
+@media print {
+    body * {
+        visibility: hidden;
+        font-family: 'Times New Roman', Times, serif !important;
+    }
+    #press-review-modal, #press-review-modal * {
+        visibility: visible;
+    }
+    #view-review-modal, #view-review-modal * {
+        visibility: visible;
+    }
+    #press-review-modal, #view-review-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        background-color: white;
+    }
+    #press-review-content, #view-review-content {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .modal-header, .modal-buttons, .close-modal {
+        display: none !important;
+    }
+    .press-review-header {
+        page-break-after: avoid;
+        break-after: avoid;
+        page-break-after: avoid;
+        text-align: center;
+        border-bottom: 2px solid black;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+    }
+    .press-review-articles {
+        column-count: 2 !important;
+        column-gap: 20px;
+        margin-top: 0;
+    }
+    .modal-content {
+        border: none !important;
+    }
+
+            .article-url {
+    font-size: 12px !important;
+    color: #666 !important;
+    margin-top: 10px !important;
+    text-align: right !important;
+}
+
+.article-url a {
+    color: #666 !important;
+    text-decoration: underline !important;
+}
+}
+
         
         #press-review-content, #view-review-content {
             background-color: white;
@@ -1310,9 +1379,23 @@ function resetManualInputFields() {
                         titleCell.textContent = article.title;
                         row.appendChild(titleCell);
                         
-                        const sourceCell = document.createElement('td');
+                       /* const sourceCell = document.createElement('td');
                         sourceCell.textContent = article.sourceName || 'N/A';
-                        row.appendChild(sourceCell);
+                        row.appendChild(sourceCell);*/
+
+                        const sourceCell = document.createElement('td');
+if (article.url) {
+    const sourceLink = document.createElement('a');
+    sourceLink.href = article.url;
+    sourceLink.target = '_blank'; // Apre il link in una nuova scheda
+    sourceLink.textContent = article.sourceName || '-';
+    sourceLink.style.textDecoration = 'none'; // Rimuove il sottolineato del link
+    sourceLink.style.color = 'inherit'; // Mantiene il colore del testo
+    sourceCell.appendChild(sourceLink);
+} else {
+    sourceCell.textContent = article.sourceName || '-';
+}
+row.appendChild(sourceCell);
                         
                         const authorCell = document.createElement('td');
                         authorCell.textContent = article.author || 'N/A';
@@ -1404,7 +1487,7 @@ function generatePressReview() {
     
     // Aggiungi ogni articolo
     savedArticles.forEach((article, index) => {
-        reviewHTML += `
+      /*  reviewHTML += `
             <div class="press-review-article">
                 <div class="article-title">${article.title}</div>
                 <div class="article-source">${article.sourceName || 'Fonte sconosciuta'}</div>
@@ -1413,7 +1496,20 @@ function generatePressReview() {
                     ${formatArticleForReview(article.content)}
                 </div>
             </div>
-        `;
+        `; */
+        reviewHTML += `
+    <div class="press-review-article">
+        <div class="article-title">${article.title}</div>
+        <div class="article-source">
+            ${article.url ? `<a href="${article.url}" target="_blank" style="text-decoration: none; color: inherit;">${article.sourceName || 'Fonte sconosciuta'}</a>` : (article.sourceName || 'Fonte sconosciuta')}
+        </div>
+        ${article.author ? `<div class="article-author">${article.author}</div>` : ''}
+        <div class="article-content">
+            ${formatArticleForReview(article.content)}
+            ${article.url ? `<div class="article-url" style="font-size: 12px; color: #666; margin-top: 10px;">Fonte: <a href="${article.url}" target="_blank" style="color: #666; text-decoration: underline;">${article.url}</a></div>` : ''}
+        </div>
+    </div>
+`;
  /*  if (index < savedArticles.length - 1) {
             reviewHTML += `<hr class="article-divider">`;
         } */
@@ -1768,5 +1864,17 @@ function generatePressReview() {
             updateSavedReviewsList();
         });
     </script>
+
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then((registration) => {
+        console.log('Service Worker registrato con successo:', registration);
+      })
+      .catch((error) => {
+        console.log('Registrazione del Service Worker fallita:', error);
+      });
+  }
+</script>
 </body>
 </html>
